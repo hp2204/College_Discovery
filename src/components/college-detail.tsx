@@ -22,19 +22,24 @@ export function CollegeDetail({ slug }: { slug: string }) {
   return (
     <main className="min-h-screen bg-[#f7f7f2] text-[#161712]">
       <section className="border-b border-[#d7d5c9] bg-white">
-        <div className="mx-auto max-w-6xl px-5 py-6">
-          <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#256f5a]"><ArrowLeft size={16} /> Back to discovery</Link>
-          <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px] lg:items-end">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9b5147]">{college.type} • {college.city}, {college.state}</p>
-              <h1 className="mt-2 max-w-4xl text-4xl font-semibold tracking-normal">{college.name}</h1>
-              <p className="mt-4 max-w-3xl leading-7 text-[#55564d]">{college.overview}</p>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Tile icon={<Star size={18} />} label="Rating" value={`${college.rating}/5`} />
-              <Tile icon={<TrendingUp size={18} />} label="Placement" value={`${college.placementRate}%`} />
-              <Tile icon={<IndianRupee size={18} />} label="Annual fee" value={money.format(college.annualFee)} />
-              <Tile icon={<Building2 size={18} />} label="Avg package" value={money.format(college.averagePackage)} />
+        <div
+          className="min-h-[360px] bg-cover bg-center"
+          style={{ backgroundImage: `linear-gradient(90deg, rgba(22,23,18,0.88), rgba(22,23,18,0.56), rgba(22,23,18,0.12)), url(${college.imageUrl})` }}
+        >
+          <div className="mx-auto max-w-6xl px-5 py-6 text-white">
+            <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#bde8d5]"><ArrowLeft size={16} /> Back to discovery</Link>
+            <div className="mt-5 grid gap-5 lg:grid-cols-[1fr_320px] lg:items-end">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#f2c078]">{college.type} - {college.city}, {college.state}</p>
+                <h1 className="mt-2 max-w-4xl text-4xl font-semibold tracking-normal">{college.name}</h1>
+                <p className="mt-4 max-w-3xl leading-7 text-[#f4f3ec]">{college.overview}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Tile icon={<Star size={18} />} label="Rating" value={`${college.rating}/5`} />
+                <Tile icon={<TrendingUp size={18} />} label="Placement" value={`${college.placementRate}%`} />
+                <Tile icon={<IndianRupee size={18} />} label="Annual fee" value={money.format(college.annualFee)} />
+                <Tile icon={<Building2 size={18} />} label="Avg package" value={money.format(college.averagePackage)} />
+              </div>
             </div>
           </div>
         </div>
@@ -86,6 +91,10 @@ export function CollegeDetail({ slug }: { slug: string }) {
               <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6b6a60]">Highest package</p>
               <p className="mt-1 text-2xl font-semibold">{money.format(college.highestPackage)}</p>
             </div>
+            <div className="rounded-md bg-[#eaf3ee] p-3">
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#256f5a]">Decision hint</p>
+              <p className="mt-1 text-sm leading-6 text-[#335347]">Use this profile as a comparator for ROI, branch availability, and location trade-offs before locking a counselling order.</p>
+            </div>
           </div>
         </aside>
       </section>
@@ -95,7 +104,7 @@ export function CollegeDetail({ slug }: { slug: string }) {
 
 function Tile({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-md border border-[#d7d5c9] bg-[#fbfbf6] p-3">
+    <div className="rounded-md border border-white/20 bg-white/90 p-3 text-[#161712]">
       <div className="text-[#256f5a]">{icon}</div>
       <p className="mt-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#6b6a60]">{label}</p>
       <p className="mt-1 font-semibold">{value}</p>
