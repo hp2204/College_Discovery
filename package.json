@@ -2,15 +2,16 @@
   "name": "college-discovery",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "prisma:generate": "prisma generate",
-    "prisma:push": "prisma db push",
-    "db:seed": "tsx prisma/seed.ts"
-  },
+ "scripts": {
+  "dev": "next dev",
+  "build": "next build",
+  "start": "next start",
+  "lint": "eslint",
+  "prisma:generate": "prisma generate",
+  "prisma:push": "prisma db push",
+  "db:seed": "tsx prisma/seed.ts",
+  "postinstall": "prisma generate"
+},
   "dependencies": {
     "@prisma/client": "^6.19.3",
     "lucide-react": "^1.17.0",
