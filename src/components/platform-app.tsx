@@ -7,21 +7,24 @@ import {
   Bookmark,
   Bot,
   Building2,
+  ChevronDown,
+  ChevronUp,
   Database,
   GitCompare,
   GraduationCap,
+  Globe2,
   Home,
-  LogOut,
   MapPin,
+  Menu,
   MessageSquare,
   Search,
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  X,
 } from "lucide-react";
 import type { College } from "@/lib/sample-data";
 
-type User = { id: string; name: string; email: string };
 type Question = { id: string; title: string; body: string; college?: { name?: string }; answers: { id: string; body: string }[] };
 type Prediction = College & {
   probability: number;
@@ -41,6 +44,17 @@ const branches = ["Any", "CSE", "AI/ML", "ECE", "Electrical", "Mechanical", "Civ
 const categories = ["GEN", "EWS", "OBC", "SC", "ST"];
 const quotas = ["All India", "State quota", "Home state"];
 const modes = ["Flexible", "Strict"] as const;
+const navItems = ["Home", "College Finder", "Rank Predictor", "About", "Contact", "Feedback"];
+const languages = [
+  { native: "English", label: "English" },
+  { native: "हिंदी", label: "Hindi" },
+  { native: "தமிழ்", label: "Tamil" },
+  { native: "తెలుగు", label: "Telugu" },
+  { native: "বাংলা", label: "Bengali" },
+  { native: "मराठी", label: "Marathi" },
+  { native: "ગુજરાતી", label: "Gujarati" },
+  { native: "ಕನ್ನಡ", label: "Kannada" },
+];
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -93,10 +107,10 @@ export function PlatformApp() {
   const [mode, setMode] = useState<(typeof modes)[number]>("Flexible");
   const [questions, setQuestions] = useState<Question[]>([]);
   const [questionDraft, setQuestionDraft] = useState({ title: "", body: "" });
-  const [user, setUser] = useState<User | null>(null);
-  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
-  const [auth, setAuth] = useState({ name: "Demo Student", email: "demo@student.com", password: "password" });
   const [saved, setSaved] = useState<College[]>([]);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
+  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
 
   const params = useMemo(() => {
     const search = new URLSearchParams({ page: String(page), maxFee });
@@ -124,7 +138,6 @@ export function PlatformApp() {
   }, [params]);
 
   useEffect(() => {
-    fetch("/api/auth/me").then((res) => res.json()).then((data) => setUser(data.user));
     refreshSaved();
     refreshQuestions();
   }, []);
@@ -142,22 +155,6 @@ export function PlatformApp() {
 
   function refreshQuestions() {
     fetch("/api/questions").then((res) => res.json()).then((data) => setQuestions(data.items));
-  }
-
-  async function submitAuth() {
-    const endpoint = authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
-    const res = await fetch(endpoint, { method: "POST", body: JSON.stringify(auth) });
-    const data = await res.json();
-    if (res.ok) {
-      setUser(data.user);
-      refreshSaved();
-    }
-  }
-
-  async function logout() {
-    await fetch("/api/auth/logout", { method: "POST" });
-    setUser(null);
-    setSaved([]);
   }
 
   async function toggleSaved(collegeId: string) {
@@ -181,47 +178,119 @@ export function PlatformApp() {
     refreshQuestions();
   }
 
+  function jumpTo(section: string) {
+    const targetMap: Record<string, string> = {
+      Home: "top",
+      "College Finder": "college-finder",
+      "Rank Predictor": "rank-predictor",
+      About: "about",
+      Contact: "contact",
+      Feedback: "feedback",
+    };
+    document.getElementById(targetMap[section])?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMobileMenuOpen(false);
+  }
+
+  function predictAndJump() {
+    predict();
+    document.getElementById("rank-predictor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setMobileMenuOpen(false);
+  }
+
   const savedIds = new Set(saved.map((college) => college.id));
   const pages = Math.max(Math.ceil(total / 6), 1);
   const bestPrediction = predictions[0];
 
   return (
-    <main className="min-h-screen bg-[#f7f7f2] text-[#161712]">
-      <header className="border-b border-[#d7d5c9] bg-[#fbfbf6]">
-        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="grid size-11 place-items-center rounded-md bg-[#256f5a] text-white">
-              <GraduationCap size={24} />
+    <main id="top" className="min-h-screen bg-[#f7f7f2] text-[#161712]">
+      <header className="sticky top-0 z-40 border-b border-[#e4e7ef] bg-[#f8fafc]/95 shadow-sm backdrop-blur">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between gap-4 px-5">
+          <button className="flex items-center gap-3" onClick={() => jumpTo("Home")} aria-label="CollegeCompass home">
+            <span className="grid size-11 place-items-center rounded-xl bg-[#1398d8] text-white shadow-lg shadow-[#1398d8]/20">
+              <GraduationCap size={23} />
+            </span>
+            <span className="text-2xl font-extrabold tracking-normal text-[#101827]">
+              College<span className="text-[#2563eb]">Compass</span>
+            </span>
+          </button>
+
+          <nav className="hidden items-center gap-2 lg:flex">
+            {navItems.map((item) => (
+              <button
+                key={item}
+                className={`rounded-md px-4 py-3 text-sm font-bold transition ${item === "Home" ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#4b5563] hover:bg-[#eef6ff] hover:text-[#245bd6]"}`}
+                onClick={() => jumpTo(item)}
+              >
+                {item}
+              </button>
+            ))}
+          </nav>
+
+          <div className="hidden items-center gap-3 lg:flex">
+            <div className="relative">
+              <button className="flex items-center gap-2 rounded-md px-3 py-2 text-sm font-bold text-[#4b5563] hover:bg-[#eef6ff]" onClick={() => setLanguageOpen((value) => !value)}>
+                <Globe2 size={18} /> {selectedLanguage.label} {languageOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </button>
+              {languageOpen && (
+                <LanguageMenu
+                  selectedLanguage={selectedLanguage.label}
+                  onSelect={(language) => {
+                    setSelectedLanguage(language);
+                    setLanguageOpen(false);
+                  }}
+                />
+              )}
             </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6a60]">Decision intelligence for admissions</p>
-              <h1 className="text-2xl font-semibold tracking-normal">AdmitLens</h1>
+            <button className="primary-button h-11 bg-[#2563eb] px-5 hover:bg-[#1d4ed8]" onClick={predictAndJump}>
+              Predict My College
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 lg:hidden">
+            <button className="icon-button border-0 bg-transparent" onClick={() => setLanguageOpen((value) => !value)} title="Language">
+              <Globe2 size={22} />
+            </button>
+            <button className="icon-button border-0 bg-transparent" onClick={() => setMobileMenuOpen((value) => !value)} title="Menu">
+              {mobileMenuOpen ? <X size={28} /> : <Menu size={30} />}
+            </button>
+          </div>
+        </div>
+
+        {languageOpen && (
+          <div className="absolute right-16 top-[64px] z-50 lg:hidden">
+            <LanguageMenu
+              selectedLanguage={selectedLanguage.label}
+              onSelect={(language) => {
+                setSelectedLanguage(language);
+                setLanguageOpen(false);
+              }}
+            />
+          </div>
+        )}
+
+        {mobileMenuOpen && (
+          <div className="border-t border-[#e4e7ef] bg-white px-4 pb-5 pt-4 lg:hidden">
+            <div className="grid gap-3">
+              {navItems.map((item) => (
+                <button
+                  key={item}
+                  className={`rounded-xl px-5 py-4 text-left text-lg font-bold ${item === "Home" ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#313946]"}`}
+                  onClick={() => jumpTo(item)}
+                >
+                  {item}
+                </button>
+              ))}
+              <button className="mt-2 rounded-xl bg-[#2563eb] px-5 py-4 text-lg font-extrabold text-white shadow-lg shadow-[#2563eb]/20" onClick={predictAndJump}>
+                Predict My College
+              </button>
             </div>
           </div>
-          {user ? (
-            <div className="flex items-center gap-2">
-              <span className="rounded-md border border-[#d7d5c9] bg-white px-3 py-2 text-sm">Signed in as {user.name}</span>
-              <button className="icon-button" onClick={logout} title="Log out">
-                <LogOut size={18} />
-              </button>
-            </div>
-          ) : (
-            <div className="grid gap-2 rounded-md border border-[#d7d5c9] bg-white p-2 sm:grid-cols-[110px_170px_120px_44px]">
-              {authMode === "signup" && <input className="field" aria-label="Name" value={auth.name} onChange={(e) => setAuth({ ...auth, name: e.target.value })} />}
-              <input className="field" aria-label="Email" value={auth.email} onChange={(e) => setAuth({ ...auth, email: e.target.value })} />
-              <input className="field" aria-label="Password" type="password" value={auth.password} onChange={(e) => setAuth({ ...auth, password: e.target.value })} />
-              <button className="primary-button" onClick={submitAuth}>{authMode === "signup" ? "Join" : "Go"}</button>
-              <button className="text-left text-xs font-semibold text-[#256f5a] sm:col-span-full" onClick={() => setAuthMode(authMode === "signup" ? "login" : "signup")}>
-                Switch to {authMode === "signup" ? "login" : "signup"}
-              </button>
-            </div>
-          )}
-        </div>
+        )}
       </header>
 
       <section className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[1fr_390px]">
         <div className="space-y-5">
-          <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+          <section id="college-finder" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
             <div className="grid gap-3 lg:grid-cols-[1fr_150px_140px_150px]">
               <label className="relative">
                 <Search className="absolute left-3 top-3 text-[#6b6a60]" size={18} />
@@ -306,7 +375,7 @@ export function PlatformApp() {
         </div>
 
         <aside className="space-y-5">
-          <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+          <section id="rank-predictor" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
             <div className="flex items-center gap-2">
               <Sparkles className="text-[#b16d2a]" size={20} />
               <h2 className="text-lg font-semibold">Prediction cockpit</h2>
@@ -386,6 +455,27 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
+function LanguageMenu({ selectedLanguage, onSelect }: { selectedLanguage: string; onSelect: (language: (typeof languages)[number]) => void }) {
+  return (
+    <div className="w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#e5eaf3] bg-white p-3 shadow-2xl shadow-slate-900/18">
+      {languages.map((language) => {
+        const selected = selectedLanguage === language.label;
+        return (
+          <button
+            key={language.label}
+            className={`grid w-full grid-cols-[42px_1fr_90px] items-center gap-3 rounded-xl px-4 py-3 text-left transition ${selected ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#313946] hover:bg-[#f5f7fb]"}`}
+            onClick={() => onSelect(language)}
+          >
+            <span className="text-2xl">🇮🇳</span>
+            <span className="text-lg font-bold">{language.native}</span>
+            <span className={`text-right text-base ${selected ? "font-bold text-[#245bd6]" : "text-[#8a93a3]"}`}>{language.label}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function PredictionCard({ college }: { college: Prediction }) {
   const color = college.riskLevel === "Safe" ? "#256f5a" : college.riskLevel === "Moderate" ? "#b16d2a" : "#9b5147";
   const maxRank = Math.max(...college.cutoffHistory.map((item) => item.closingRank));
@@ -445,7 +535,7 @@ function CompareTable({ colleges }: { colleges: College[] }) {
 
 function TransparencyPanel() {
   return (
-    <section className="grid gap-3 rounded-md border border-[#d7d5c9] bg-white p-4 md:grid-cols-3">
+    <section id="about" className="scroll-mt-24 grid gap-3 rounded-md border border-[#d7d5c9] bg-white p-4 md:grid-cols-3">
       <div className="flex gap-3">
         <Database className="mt-1 text-[#256f5a]" size={20} />
         <div>
@@ -473,10 +563,10 @@ function TransparencyPanel() {
 
 function Discussion({ questions, draft, setDraft, askQuestion }: { questions: Question[]; draft: { title: string; body: string }; setDraft: (value: { title: string; body: string }) => void; askQuestion: () => void }) {
   return (
-    <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+    <section id="contact" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="text-[#9b5147]" size={20} />
-        <h2 className="text-lg font-semibold">Counselling Q&A</h2>
+        <h2 id="feedback" className="text-lg font-semibold">Counselling Q&A</h2>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_120px]">
         <input className="field h-11" placeholder="Question title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
