@@ -13,8 +13,32 @@ export type College = {
   placementRate: number;
   averagePackage: number;
   highestPackage: number;
+  imageUrl?: string;
   courses: { id: string; name: string; duration: string; seats: number; fee: number }[];
   reviews: { id: string; author: string; rating: number; comment: string; createdAt: string }[];
+};
+
+export const collegeImages: Record<string, string> = {
+  "indian-institute-technology-bombay":
+    "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=1200&q=80",
+  "bits-pilani":
+    "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=1200&q=80",
+  "national-institute-technology-trichy":
+    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1200&q=80",
+  "delhi-technological-university":
+    "https://images.unsplash.com/photo-1607237138185-eedd9c632b0b?auto=format&fit=crop&w=1200&q=80",
+  "manipal-institute-of-technology":
+    "https://images.unsplash.com/photo-1576495199011-eb94736d05d6?auto=format&fit=crop&w=1200&q=80",
+  "vellore-institute-of-technology":
+    "https://images.unsplash.com/photo-1589308454676-22b9ec2f3c94?auto=format&fit=crop&w=1200&q=80",
+  "srm-institute-of-science-and-technology":
+    "https://images.unsplash.com/photo-1567521464027-f127ff144326?auto=format&fit=crop&w=1200&q=80",
+  "amity-university-noida":
+    "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=1200&q=80",
+  "pes-university-bengaluru":
+    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?auto=format&fit=crop&w=1200&q=80",
+  "jadavpur-university":
+    "https://images.unsplash.com/photo-1606761568499-6d2451b23c66?auto=format&fit=crop&w=1200&q=80",
 };
 
 export const colleges: College[] = [
@@ -34,6 +58,7 @@ export const colleges: College[] = [
     placementRate: 93,
     averagePackage: 2180000,
     highestPackage: 16800000,
+    imageUrl: collegeImages["indian-institute-technology-bombay"],
     courses: [
       { id: "co1", name: "B.Tech Computer Science", duration: "4 years", seats: 120, fee: 215000 },
       { id: "co2", name: "B.Tech Electrical Engineering", duration: "4 years", seats: 110, fee: 215000 },
@@ -60,6 +85,7 @@ export const colleges: College[] = [
     placementRate: 91,
     averagePackage: 1850000,
     highestPackage: 9800000,
+    imageUrl: collegeImages["bits-pilani"],
     courses: [
       { id: "co4", name: "B.E. Computer Science", duration: "4 years", seats: 150, fee: 565000 },
       { id: "co5", name: "B.E. Electronics", duration: "4 years", seats: 130, fee: 565000 },
@@ -86,6 +112,7 @@ export const colleges: College[] = [
     placementRate: 88,
     averagePackage: 1420000,
     highestPackage: 5200000,
+    imageUrl: collegeImages["national-institute-technology-trichy"],
     courses: [
       { id: "co7", name: "B.Tech Computer Science", duration: "4 years", seats: 116, fee: 145000 },
       { id: "co8", name: "B.Tech Mechanical Engineering", duration: "4 years", seats: 120, fee: 145000 },
@@ -111,6 +138,7 @@ export const colleges: College[] = [
     placementRate: 84,
     averagePackage: 1180000,
     highestPackage: 6400000,
+    imageUrl: collegeImages["delhi-technological-university"],
     courses: [
       { id: "co10", name: "B.Tech Software Engineering", duration: "4 years", seats: 180, fee: 235000 },
       { id: "co11", name: "B.Tech Electronics", duration: "4 years", seats: 160, fee: 235000 },
@@ -135,6 +163,7 @@ export const colleges: College[] = [
     placementRate: 79,
     averagePackage: 920000,
     highestPackage: 4600000,
+    imageUrl: collegeImages["manipal-institute-of-technology"],
     courses: [
       { id: "co12", name: "B.Tech Information Technology", duration: "4 years", seats: 180, fee: 390000 },
       { id: "co13", name: "B.Tech Biomedical Engineering", duration: "4 years", seats: 60, fee: 335000 },
@@ -159,12 +188,113 @@ export const colleges: College[] = [
     placementRate: 81,
     averagePackage: 860000,
     highestPackage: 5900000,
+    imageUrl: collegeImages["vellore-institute-of-technology"],
     courses: [
       { id: "co14", name: "B.Tech Computer Science", duration: "4 years", seats: 600, fee: 255000 },
       { id: "co15", name: "B.Tech Civil Engineering", duration: "4 years", seats: 120, fee: 210000 },
     ],
     reviews: [
       { id: "r8", author: "Ishan", rating: 4.0, comment: "Lots of opportunities, though you need to stand out in a large batch.", createdAt: "2026-01-09" },
+    ],
+  },
+  {
+    id: "c7",
+    slug: "srm-institute-of-science-and-technology",
+    name: "SRM Institute of Science and Technology",
+    city: "Chennai",
+    state: "Tamil Nadu",
+    type: "Private",
+    exams: ["SRMJEEE", "JEE Main"],
+    annualFee: 310000,
+    rating: 4.0,
+    rankCutoff: 52000,
+    overview:
+      "A large multidisciplinary private university with strong engineering intake, modern labs, and broad recruiter participation across IT services and product roles.",
+    placementRate: 78,
+    averagePackage: 820000,
+    highestPackage: 4200000,
+    imageUrl: collegeImages["srm-institute-of-science-and-technology"],
+    courses: [
+      { id: "co16", name: "B.Tech Computer Science", duration: "4 years", seats: 720, fee: 310000 },
+      { id: "co17", name: "B.Tech Artificial Intelligence", duration: "4 years", seats: 240, fee: 325000 },
+    ],
+    reviews: [
+      { id: "r9", author: "Sana", rating: 4.0, comment: "A good option if you use the large campus ecosystem actively.", createdAt: "2026-03-18" },
+    ],
+  },
+  {
+    id: "c8",
+    slug: "amity-university-noida",
+    name: "Amity University Noida",
+    city: "Noida",
+    state: "Uttar Pradesh",
+    type: "Private",
+    exams: ["JEE Main", "Amity JEE"],
+    annualFee: 285000,
+    rating: 3.9,
+    rankCutoff: 62000,
+    overview:
+      "A private university near Delhi NCR with broad program choice, corporate exposure, and strong facilities for management, technology, and applied sciences.",
+    placementRate: 73,
+    averagePackage: 720000,
+    highestPackage: 3200000,
+    imageUrl: collegeImages["amity-university-noida"],
+    courses: [
+      { id: "co18", name: "B.Tech Computer Science", duration: "4 years", seats: 360, fee: 285000 },
+      { id: "co19", name: "BBA Analytics", duration: "3 years", seats: 120, fee: 210000 },
+    ],
+    reviews: [
+      { id: "r10", author: "Arjun", rating: 3.9, comment: "Corporate exposure is useful, but outcomes depend heavily on initiative.", createdAt: "2026-02-25" },
+    ],
+  },
+  {
+    id: "c9",
+    slug: "pes-university-bengaluru",
+    name: "PES University Bengaluru",
+    city: "Bengaluru",
+    state: "Karnataka",
+    type: "Private",
+    exams: ["KCET", "PESSAT", "JEE Main"],
+    annualFee: 410000,
+    rating: 4.2,
+    rankCutoff: 24000,
+    overview:
+      "A Bengaluru-based university with strong software placement access, applied engineering programs, and proximity to startup and product-company ecosystems.",
+    placementRate: 82,
+    averagePackage: 1030000,
+    highestPackage: 5200000,
+    imageUrl: collegeImages["pes-university-bengaluru"],
+    courses: [
+      { id: "co20", name: "B.Tech Computer Science", duration: "4 years", seats: 480, fee: 410000 },
+      { id: "co21", name: "B.Tech Electronics", duration: "4 years", seats: 180, fee: 385000 },
+    ],
+    reviews: [
+      { id: "r11", author: "Neha", rating: 4.2, comment: "Bengaluru location creates a lot of internship momentum.", createdAt: "2026-04-03" },
+    ],
+  },
+  {
+    id: "c10",
+    slug: "jadavpur-university",
+    name: "Jadavpur University",
+    city: "Kolkata",
+    state: "West Bengal",
+    type: "Public",
+    exams: ["WBJEE", "GATE"],
+    annualFee: 18000,
+    rating: 4.4,
+    rankCutoff: 9500,
+    overview:
+      "A high-ROI public university with a strong engineering culture, respected faculty, active student bodies, and excellent outcomes for core and software roles.",
+    placementRate: 86,
+    averagePackage: 1260000,
+    highestPackage: 5800000,
+    imageUrl: collegeImages["jadavpur-university"],
+    courses: [
+      { id: "co22", name: "B.E. Computer Science", duration: "4 years", seats: 90, fee: 18000 },
+      { id: "co23", name: "B.E. Mechanical Engineering", duration: "4 years", seats: 100, fee: 18000 },
+    ],
+    reviews: [
+      { id: "r12", author: "Ritwik", rating: 4.5, comment: "The ROI is outstanding, and the peer group is very serious.", createdAt: "2026-03-29" },
     ],
   },
 ];
