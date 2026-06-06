@@ -1,0 +1,302 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import { Bookmark, GitCompare, GraduationCap, LogOut, MessageSquare, Search, Sparkles } from "lucide-react";
+import type { College } from "@/lib/sample-data";
+
+type User = { id: string; name: string; email: string };
+type Question = { id: string; title: string; body: string; college?: { name?: string }; answers: { id: string; body: string }[] };
+
+const exams = ["", "JEE Advanced", "JEE Main", "BITSAT", "MET", "VITEEE", "GATE"];
+const types = ["", "Public", "Private", "Deemed"];
+
+const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
+
+export function PlatformApp() {
+  const [colleges, setColleges] = useState<College[]>([]);
+  const [total, setTotal] = useState(0);
+  const [page, setPage] = useState(1);
+  const [query, setQuery] = useState("");
+  const [exam, setExam] = useState("");
+  const [type, setType] = useState("");
+  const [maxFee, setMaxFee] = useState("600000");
+  const [compareIds, setCompareIds] = useState<string[]>([]);
+  const [compare, setCompare] = useState<College[]>([]);
+  const [predictions, setPredictions] = useState<(College & { confidence: string })[]>([]);
+  const [rank, setRank] = useState("9000");
+  const [predictExam, setPredictExam] = useState("JEE Main");
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questionDraft, setQuestionDraft] = useState({ title: "", body: "" });
+  const [user, setUser] = useState<User | null>(null);
+  const [authMode, setAuthMode] = useState<"login" | "signup">("signup");
+  const [auth, setAuth] = useState({ name: "Demo Student", email: "demo@student.com", password: "password" });
+  const [saved, setSaved] = useState<College[]>([]);
+
+  const params = useMemo(() => {
+    const search = new URLSearchParams({ page: String(page), maxFee });
+    if (query) search.set("q", query);
+    if (exam) search.set("exam", exam);
+    if (type) search.set("type", type);
+    return search.toString();
+  }, [exam, maxFee, page, query, type]);
+
+  useEffect(() => {
+    fetch(`/api/colleges?${params}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setColleges(data.items);
+        setTotal(data.total);
+      });
+  }, [params]);
+
+  useEffect(() => {
+    fetch("/api/auth/me").then((res) => res.json()).then((data) => setUser(data.user));
+    refreshSaved();
+    refreshQuestions();
+  }, []);
+
+  useEffect(() => {
+    const source = compareIds.length
+      ? fetch(`/api/compare?ids=${compareIds.join(",")}`).then((res) => res.json())
+      : Promise.resolve({ items: [] });
+    source.then((data) => setCompare(data.items));
+  }, [compareIds]);
+
+  function refreshSaved() {
+    fetch("/api/saved").then((res) => res.json()).then((data) => setSaved(data.items));
+  }
+
+  function refreshQuestions() {
+    fetch("/api/questions").then((res) => res.json()).then((data) => setQuestions(data.items));
+  }
+
+  async function submitAuth() {
+    const endpoint = authMode === "signup" ? "/api/auth/signup" : "/api/auth/login";
+    const res = await fetch(endpoint, { method: "POST", body: JSON.stringify(auth) });
+    const data = await res.json();
+    if (res.ok) {
+      setUser(data.user);
+      refreshSaved();
+    }
+  }
+
+  async function logout() {
+    await fetch("/api/auth/logout", { method: "POST" });
+    setUser(null);
+    setSaved([]);
+  }
+
+  async function toggleSaved(collegeId: string) {
+    const res = await fetch("/api/saved", { method: "POST", body: JSON.stringify({ collegeId }) });
+    if (res.ok) refreshSaved();
+  }
+
+  async function predict() {
+    const res = await fetch("/api/predictor", { method: "POST", body: JSON.stringify({ exam: predictExam, rank }) });
+    const data = await res.json();
+    setPredictions(data.items ?? []);
+  }
+
+  async function askQuestion() {
+    if (!questionDraft.title || !questionDraft.body) return;
+    await fetch("/api/questions", { method: "POST", body: JSON.stringify(questionDraft) });
+    setQuestionDraft({ title: "", body: "" });
+    refreshQuestions();
+  }
+
+  const savedIds = new Set(saved.map((college) => college.id));
+  const pages = Math.max(Math.ceil(total / 6), 1);
+
+  return (
+    <main className="min-h-screen bg-[#f7f7f2] text-[#161712]">
+      <header className="border-b border-[#d7d5c9] bg-[#fbfbf6]">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 px-5 py-5 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="grid size-11 place-items-center rounded-md bg-[#256f5a] text-white">
+              <GraduationCap size={24} />
+            </div>
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#6b6a60]">College Discovery Platform</p>
+              <h1 className="text-2xl font-semibold tracking-normal">AdmitLens</h1>
+            </div>
+          </div>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+            {user ? (
+              <div className="flex items-center gap-2">
+                <span className="rounded-md border border-[#d7d5c9] bg-white px-3 py-2 text-sm">Signed in as {user.name}</span>
+                <button className="icon-button" onClick={logout} title="Log out">
+                  <LogOut size={18} />
+                </button>
+              </div>
+            ) : (
+              <div className="grid gap-2 rounded-md border border-[#d7d5c9] bg-white p-2 sm:grid-cols-[110px_170px_120px_44px]">
+                {authMode === "signup" && <input className="field" value={auth.name} onChange={(e) => setAuth({ ...auth, name: e.target.value })} />}
+                <input className="field" value={auth.email} onChange={(e) => setAuth({ ...auth, email: e.target.value })} />
+                <input className="field" type="password" value={auth.password} onChange={(e) => setAuth({ ...auth, password: e.target.value })} />
+                <button className="primary-button" onClick={submitAuth}>{authMode === "signup" ? "Join" : "Go"}</button>
+                <button className="text-left text-xs font-semibold text-[#256f5a] sm:col-span-full" onClick={() => setAuthMode(authMode === "signup" ? "login" : "signup")}>
+                  Switch to {authMode === "signup" ? "login" : "signup"}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </header>
+
+      <section className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[1fr_360px]">
+        <div className="space-y-5">
+          <div className="grid gap-3 rounded-md border border-[#d7d5c9] bg-white p-4 lg:grid-cols-[1fr_170px_150px_190px]">
+            <label className="relative">
+              <Search className="absolute left-3 top-3 text-[#6b6a60]" size={18} />
+              <input className="field h-11 w-full pl-10" placeholder="Search college, city, state" value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+            </label>
+            <select className="field h-11" value={exam} onChange={(e) => { setExam(e.target.value); setPage(1); }}>{exams.map((item) => <option key={item} value={item}>{item || "Any exam"}</option>)}</select>
+            <select className="field h-11" value={type} onChange={(e) => { setType(e.target.value); setPage(1); }}>{types.map((item) => <option key={item} value={item}>{item || "Any type"}</option>)}</select>
+            <label className="grid gap-1 text-xs font-semibold text-[#6b6a60]">
+              Max fee {money.format(Number(maxFee))}
+              <input type="range" min="150000" max="600000" step="25000" value={maxFee} onChange={(e) => { setMaxFee(e.target.value); setPage(1); }} />
+            </label>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {colleges.map((college) => (
+              <article key={college.id} className="rounded-md border border-[#d7d5c9] bg-white p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9b5147]">{college.type} • {college.city}</p>
+                    <Link className="mt-1 block text-xl font-semibold hover:text-[#256f5a]" href={`/colleges/${college.slug}`}>{college.name}</Link>
+                  </div>
+                  <button className="icon-button" title="Save college" onClick={() => toggleSaved(college.id)}>
+                    <Bookmark size={18} fill={savedIds.has(college.id) ? "#256f5a" : "none"} />
+                  </button>
+                </div>
+                <p className="mt-3 line-clamp-2 text-sm leading-6 text-[#55564d]">{college.overview}</p>
+                <div className="mt-4 grid grid-cols-3 gap-2 text-sm">
+                  <Metric label="Fee" value={money.format(college.annualFee)} />
+                  <Metric label="Rating" value={`${college.rating}/5`} />
+                  <Metric label="Placement" value={`${college.placementRate}%`} />
+                </div>
+                <div className="mt-4 flex items-center justify-between gap-2">
+                  <button
+                    className="secondary-button"
+                    onClick={() => setCompareIds((ids) => ids.includes(college.id) ? ids.filter((id) => id !== college.id) : ids.length < 3 ? [...ids, college.id] : ids)}
+                  >
+                    <GitCompare size={16} /> {compareIds.includes(college.id) ? "Selected" : "Compare"}
+                  </button>
+                  <Link className="text-sm font-semibold text-[#256f5a]" href={`/colleges/${college.slug}`}>Open detail</Link>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          <div className="flex items-center justify-between rounded-md border border-[#d7d5c9] bg-white p-3">
+            <span className="text-sm text-[#55564d]">Showing page {page} of {pages} • {total} matches</span>
+            <div className="flex gap-2">
+              <button className="secondary-button" disabled={page === 1} onClick={() => setPage(page - 1)}>Prev</button>
+              <button className="secondary-button" disabled={page === pages} onClick={() => setPage(page + 1)}>Next</button>
+            </div>
+          </div>
+
+          <CompareTable colleges={compare} />
+          <Discussion questions={questions} draft={questionDraft} setDraft={setQuestionDraft} askQuestion={askQuestion} />
+        </div>
+
+        <aside className="space-y-5">
+          <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <Sparkles className="text-[#b16d2a]" size={20} />
+              <h2 className="text-lg font-semibold">Rank predictor</h2>
+            </div>
+            <div className="mt-4 grid gap-3">
+              <select className="field h-11" value={predictExam} onChange={(e) => setPredictExam(e.target.value)}>{exams.filter(Boolean).map((item) => <option key={item}>{item}</option>)}</select>
+              <input className="field h-11" type="number" value={rank} onChange={(e) => setRank(e.target.value)} />
+              <button className="primary-button h-11" onClick={predict}>Find matches</button>
+            </div>
+            <div className="mt-4 space-y-3">
+              {predictions.map((college) => (
+                <div key={college.id} className="rounded-md border border-[#e4e1d8] p-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="font-semibold">{college.name}</p>
+                    <span className="rounded-sm bg-[#eaf3ee] px-2 py-1 text-xs font-semibold text-[#256f5a]">{college.confidence}</span>
+                  </div>
+                  <p className="mt-1 text-sm text-[#55564d]">Cutoff rank near {college.rankCutoff.toLocaleString("en-IN")}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+            <div className="flex items-center gap-2">
+              <Bookmark className="text-[#256f5a]" size={20} />
+              <h2 className="text-lg font-semibold">Saved colleges</h2>
+            </div>
+            <div className="mt-3 space-y-2">
+              {saved.length ? saved.map((college) => (
+                <Link key={college.id} href={`/colleges/${college.slug}`} className="block rounded-md border border-[#e4e1d8] p-3 text-sm font-semibold hover:border-[#256f5a]">{college.name}</Link>
+              )) : <p className="text-sm leading-6 text-[#55564d]">Sign up and save colleges to create a shortlist.</p>}
+            </div>
+          </section>
+        </aside>
+      </section>
+    </main>
+  );
+}
+
+function Metric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-md bg-[#f4f3ec] p-3">
+      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#6b6a60]">{label}</p>
+      <p className="mt-1 font-semibold">{value}</p>
+    </div>
+  );
+}
+
+function CompareTable({ colleges }: { colleges: College[] }) {
+  if (!colleges.length) return null;
+  const rows = [
+    ["Fees", ...colleges.map((college) => money.format(college.annualFee))],
+    ["Placements", ...colleges.map((college) => `${college.placementRate}% placed, ${money.format(college.averagePackage)} avg`)],
+    ["Ratings", ...colleges.map((college) => `${college.rating}/5`)],
+    ["Location", ...colleges.map((college) => `${college.city}, ${college.state}`)],
+  ];
+  return (
+    <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+      <h2 className="text-lg font-semibold">Compare colleges</h2>
+      <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[680px] border-collapse text-sm">
+          <tbody>{rows.map((row) => (
+            <tr key={row[0]} className="border-t border-[#e4e1d8]">
+              {row.map((cell, index) => <td key={cell} className={`p-3 ${index === 0 ? "font-semibold text-[#6b6a60]" : ""}`}>{cell}</td>)}
+            </tr>
+          ))}</tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
+
+function Discussion({ questions, draft, setDraft, askQuestion }: { questions: Question[]; draft: { title: string; body: string }; setDraft: (value: { title: string; body: string }) => void; askQuestion: () => void }) {
+  return (
+    <section className="rounded-md border border-[#d7d5c9] bg-white p-4">
+      <div className="flex items-center gap-2">
+        <MessageSquare className="text-[#9b5147]" size={20} />
+        <h2 className="text-lg font-semibold">Q&A discussion</h2>
+      </div>
+      <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_120px]">
+        <input className="field h-11" placeholder="Question title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+        <input className="field h-11" placeholder="Add context" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+        <button className="primary-button" onClick={askQuestion}>Ask</button>
+      </div>
+      <div className="mt-4 grid gap-3">
+        {questions.map((question) => (
+          <article key={question.id} className="rounded-md border border-[#e4e1d8] p-3">
+            <h3 className="font-semibold">{question.title}</h3>
+            <p className="mt-1 text-sm leading-6 text-[#55564d]">{question.body}</p>
+            <p className="mt-2 text-xs font-semibold text-[#6b6a60]">{question.answers.length} answers {question.college?.name ? `• ${question.college.name}` : ""}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}

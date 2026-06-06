@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f7f7f2;
+  --foreground: #161712;
 }
 
 @theme inline {
@@ -12,15 +12,78 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.field {
+  border: 1px solid #d7d5c9;
+  border-radius: 6px;
+  background: #ffffff;
+  padding: 0.6rem 0.75rem;
+  color: #161712;
+  outline: none;
+}
+
+.field:focus {
+  border-color: #256f5a;
+  box-shadow: 0 0 0 3px rgba(37, 111, 90, 0.14);
+}
+
+.primary-button,
+.secondary-button,
+.icon-button {
+  align-items: center;
+  border-radius: 6px;
+  display: inline-flex;
+  font-weight: 700;
+  gap: 0.45rem;
+  justify-content: center;
+  min-height: 2.5rem;
+  transition: border-color 150ms ease, background 150ms ease, color 150ms ease;
+}
+
+.primary-button {
+  background: #256f5a;
+  color: white;
+  padding: 0.55rem 0.9rem;
+}
+
+.primary-button:hover {
+  background: #1f5e4d;
+}
+
+.secondary-button {
+  border: 1px solid #d7d5c9;
+  background: white;
+  color: #161712;
+  padding: 0.5rem 0.75rem;
+}
+
+.secondary-button:hover {
+  border-color: #256f5a;
+  color: #256f5a;
+}
+
+.icon-button {
+  border: 1px solid #d7d5c9;
+  background: white;
+  height: 2.5rem;
+  width: 2.5rem;
+}
+
+.icon-button:hover {
+  border-color: #256f5a;
+  color: #256f5a;
 }
