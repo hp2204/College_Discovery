@@ -8,6 +8,10 @@ import type { College } from "@/lib/sample-data";
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
+function collegeImage(college: College) {
+  return college.imageUrl ?? `https://source.unsplash.com/1200x620/?university,campus,${encodeURIComponent(college.city)}`;
+}
+
 export function CollegeDetail({ slug }: { slug: string }) {
   const [college, setCollege] = useState<College | null>(null);
 
@@ -24,7 +28,7 @@ export function CollegeDetail({ slug }: { slug: string }) {
       <section className="border-b border-[#d7d5c9] bg-white">
         <div
           className="min-h-[360px] bg-cover bg-center"
-          style={{ backgroundImage: `linear-gradient(90deg, rgba(22,23,18,0.88), rgba(22,23,18,0.56), rgba(22,23,18,0.12)), url(${college.imageUrl})` }}
+          style={{ backgroundImage: `linear-gradient(90deg, rgba(22,23,18,0.88), rgba(22,23,18,0.56), rgba(22,23,18,0.12)), url(${collegeImage(college)})` }}
         >
           <div className="mx-auto max-w-6xl px-5 py-6 text-white">
             <Link href="/" className="inline-flex items-center gap-2 text-sm font-semibold text-[#bde8d5]"><ArrowLeft size={16} /> Back to discovery</Link>

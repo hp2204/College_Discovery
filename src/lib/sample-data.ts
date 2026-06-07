@@ -13,6 +13,7 @@ export type College = {
   placementRate: number;
   averagePackage: number;
   highestPackage: number;
+  imageUrl?: string | null;
   courses: { id: string; name: string; duration: string; seats: number; fee: number }[];
   reviews: { id: string; author: string; rating: number; comment: string; createdAt: string }[];
 };

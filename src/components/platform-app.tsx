@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   BarChart3,
   Bookmark,
   Bot,
-  Building2,
   ChevronDown,
   ChevronUp,
   Database,
@@ -45,6 +44,14 @@ const categories = ["GEN", "EWS", "OBC", "SC", "ST"];
 const quotas = ["All India", "State quota", "Home state"];
 const modes = ["Flexible", "Strict"] as const;
 const navItems = ["Home", "College Finder", "Rank Predictor", "About", "Contact", "Feedback"];
+const navTargets: Record<(typeof navItems)[number], string> = {
+  Home: "top",
+  "College Finder": "college-finder",
+  "Rank Predictor": "rank-predictor",
+  About: "about",
+  Contact: "contact",
+  Feedback: "feedback",
+};
 const languages = [
   { native: "English", label: "English" },
   { native: "हिंदी", label: "Hindi" },
@@ -84,6 +91,10 @@ function branchMatches(college: College, branch: string) {
   return college.courses.some((course) => terms.some((term) => course.name.toLowerCase().includes(term)));
 }
 
+function collegeImage(college: College) {
+  return college.imageUrl ?? `https://source.unsplash.com/900x520/?university,campus,${encodeURIComponent(college.city)}`;
+}
+
 export function PlatformApp() {
   const [colleges, setColleges] = useState<College[]>([]);
   const [total, setTotal] = useState(0);
@@ -111,6 +122,8 @@ export function PlatformApp() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
+  const [activeNavItem, setActiveNavItem] = useState<(typeof navItems)[number]>("Home");
+  const navClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const params = useMemo(() => {
     const search = new URLSearchParams({ page: String(page), maxFee });
@@ -140,6 +153,35 @@ export function PlatformApp() {
   useEffect(() => {
     refreshSaved();
     refreshQuestions();
+  }, []);
+
+  useEffect(() => {
+    function updateActiveSection() {
+      if (navClickTimer.current) return;
+      if (window.scrollY < 8) {
+        setActiveNavItem("Home");
+        return;
+      }
+      const current =
+        navItems
+          .filter((item) => item !== "Home")
+          .map((item) => {
+            const section = document.getElementById(navTargets[item]);
+            return section ? { item, distance: Math.abs(section.getBoundingClientRect().top - 96) } : null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => a!.distance - b!.distance)[0]?.item ?? "Home";
+      setActiveNavItem(current);
+    }
+
+    updateActiveSection();
+    window.addEventListener("scroll", updateActiveSection, { passive: true });
+    window.addEventListener("resize", updateActiveSection);
+    return () => {
+      window.removeEventListener("scroll", updateActiveSection);
+      window.removeEventListener("resize", updateActiveSection);
+      if (navClickTimer.current) clearTimeout(navClickTimer.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -179,20 +221,25 @@ export function PlatformApp() {
   }
 
   function jumpTo(section: string) {
-    const targetMap: Record<string, string> = {
-      Home: "top",
-      "College Finder": "college-finder",
-      "Rank Predictor": "rank-predictor",
-      About: "about",
-      Contact: "contact",
-      Feedback: "feedback",
-    };
-    document.getElementById(targetMap[section])?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const navItem = section as (typeof navItems)[number];
+    setActiveNavItem(navItem);
+    setLanguageOpen(false);
+    if (navClickTimer.current) clearTimeout(navClickTimer.current);
+    navClickTimer.current = setTimeout(() => {
+      navClickTimer.current = null;
+    }, 900);
+    document.getElementById(navTargets[navItem])?.scrollIntoView({ behavior: "smooth", block: "start" });
     setMobileMenuOpen(false);
   }
 
   function predictAndJump() {
     predict();
+    setActiveNavItem("Rank Predictor");
+    setLanguageOpen(false);
+    if (navClickTimer.current) clearTimeout(navClickTimer.current);
+    navClickTimer.current = setTimeout(() => {
+      navClickTimer.current = null;
+    }, 900);
     document.getElementById("rank-predictor")?.scrollIntoView({ behavior: "smooth", block: "start" });
     setMobileMenuOpen(false);
   }
@@ -218,8 +265,9 @@ export function PlatformApp() {
             {navItems.map((item) => (
               <button
                 key={item}
-                className={`rounded-md px-4 py-3 text-sm font-bold transition ${item === "Home" ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#4b5563] hover:bg-[#eef6ff] hover:text-[#245bd6]"}`}
+                className={`rounded-md px-4 py-3 text-sm font-bold transition ${item === activeNavItem ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#4b5563] hover:bg-[#eef6ff] hover:text-[#245bd6]"}`}
                 onClick={() => jumpTo(item)}
+                aria-current={item === activeNavItem ? "page" : undefined}
               >
                 {item}
               </button>
@@ -274,8 +322,9 @@ export function PlatformApp() {
               {navItems.map((item) => (
                 <button
                   key={item}
-                  className={`rounded-xl px-5 py-4 text-left text-lg font-bold ${item === "Home" ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#313946]"}`}
+                  className={`rounded-xl px-5 py-4 text-left text-lg font-bold ${item === activeNavItem ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#313946]"}`}
                   onClick={() => jumpTo(item)}
+                  aria-current={item === activeNavItem ? "page" : undefined}
                 >
                   {item}
                 </button>
@@ -324,7 +373,7 @@ export function PlatformApp() {
               <article key={college.id} className="overflow-hidden rounded-md border border-[#d7d5c9] bg-white shadow-sm">
                 <div
                   className="h-40 bg-cover bg-center"
-                  style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.48)), url(${college.imageUrl})` }}
+                  style={{ backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0.05), rgba(0,0,0,0.48)), url(${collegeImage(college)})` }}
                 >
                   <div className="flex h-full items-end justify-between gap-3 p-4 text-white">
                     <div>
@@ -566,14 +615,14 @@ function Discussion({ questions, draft, setDraft, askQuestion }: { questions: Qu
     <section id="contact" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="text-[#9b5147]" size={20} />
-        <h2 id="feedback" className="text-lg font-semibold">Counselling Q&A</h2>
+        <h2 className="text-lg font-semibold">Counselling Q&A</h2>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_120px]">
         <input className="field h-11" placeholder="Question title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
         <input className="field h-11" placeholder="Add context" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
         <button className="primary-button" onClick={askQuestion}>Ask</button>
       </div>
-      <div className="mt-4 grid gap-3">
+      <div id="feedback" className="mt-4 grid scroll-mt-24 gap-3">
         {questions.map((question) => (
           <article key={question.id} className="rounded-md border border-[#e4e1d8] p-3">
             <h3 className="font-semibold">{question.title}</h3>
