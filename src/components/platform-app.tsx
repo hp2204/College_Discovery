@@ -3,23 +3,30 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
+  ArrowRight,
   BarChart3,
   Bookmark,
   Bot,
+  CheckCircle2,
   ChevronDown,
   ChevronUp,
+  ClipboardList,
   Database,
   GitCompare,
   GraduationCap,
   Globe2,
   Home,
+  LifeBuoy,
+  Mail,
   MapPin,
   Menu,
   MessageSquare,
+  Phone,
   Search,
   ShieldCheck,
   Sparkles,
   TrendingUp,
+  Users,
   X,
 } from "lucide-react";
 import type { College } from "@/lib/sample-data";
@@ -43,8 +50,11 @@ const branches = ["Any", "CSE", "AI/ML", "ECE", "Electrical", "Mechanical", "Civ
 const categories = ["GEN", "EWS", "OBC", "SC", "ST"];
 const quotas = ["All India", "State quota", "Home state"];
 const modes = ["Flexible", "Strict"] as const;
-const navItems = ["Home", "College Finder", "Rank Predictor", "About", "Contact", "Feedback"];
-const navTargets: Record<(typeof navItems)[number], string> = {
+const navItems = ["Home", "College Finder", "Rank Predictor", "About", "Contact", "Feedback"] as const;
+type NavItem = (typeof navItems)[number];
+type LanguageCode = "en" | "hi" | "ta" | "te" | "bn" | "mr" | "gu" | "kn";
+
+const navTargets: Record<NavItem, string> = {
   Home: "top",
   "College Finder": "college-finder",
   "Rank Predictor": "rank-predictor",
@@ -53,15 +63,161 @@ const navTargets: Record<(typeof navItems)[number], string> = {
   Feedback: "feedback",
 };
 const languages = [
-  { native: "English", label: "English" },
-  { native: "हिंदी", label: "Hindi" },
-  { native: "தமிழ்", label: "Tamil" },
-  { native: "తెలుగు", label: "Telugu" },
-  { native: "বাংলা", label: "Bengali" },
-  { native: "मराठी", label: "Marathi" },
-  { native: "ગુજરાતી", label: "Gujarati" },
-  { native: "ಕನ್ನಡ", label: "Kannada" },
-];
+  { code: "en", native: "English", label: "English" },
+  { code: "hi", native: "हिंदी", label: "Hindi" },
+  { code: "ta", native: "தமிழ்", label: "Tamil" },
+  { code: "te", native: "తెలుగు", label: "Telugu" },
+  { code: "bn", native: "বাংলা", label: "Bengali" },
+  { code: "mr", native: "मराठी", label: "Marathi" },
+  { code: "gu", native: "ગુજરાતી", label: "Gujarati" },
+  { code: "kn", native: "ಕನ್ನಡ", label: "Kannada" },
+] as const;
+
+const copy: Record<LanguageCode, {
+  nav: Record<NavItem, string>;
+  heroEyebrow: string;
+  heroTitle: string;
+  heroText: string;
+  aboutTitle: string;
+  aboutText: string;
+  finder: string;
+  predictor: string;
+  predictCta: string;
+  languageApplied: string;
+  contactTitle: string;
+  contactText: string;
+  feedbackTitle: string;
+  ask: string;
+}> = {
+  en: {
+    nav: { Home: "Home", "College Finder": "College Finder", "Rank Predictor": "Rank Predictor", About: "About", Contact: "Contact", Feedback: "Feedback" },
+    heroEyebrow: "India's college discovery cockpit",
+    heroTitle: "Navigate your future with confidence",
+    heroText: "Compare colleges, test rank scenarios, shortlist realistic choices, and ask counselling questions from one focused workspace.",
+    aboutTitle: "About CollegeCompass",
+    aboutText: "Built for JEE, BITSAT, MET, VITEEE, and GATE aspirants who need clear filters, rank insights, fee context, and placement signals before locking their preference list.",
+    finder: "College Finder",
+    predictor: "Rank Predictor",
+    predictCta: "Predict My College",
+    languageApplied: "Language applied",
+    contactTitle: "Contact CollegeCompass",
+    contactText: "Need help with counselling choices, data corrections, or partnerships? Reach the support desk below.",
+    feedbackTitle: "Counselling Q&A",
+    ask: "Ask",
+  },
+  hi: {
+    nav: { Home: "होम", "College Finder": "कॉलेज खोज", "Rank Predictor": "रैंक अनुमान", About: "परिचय", Contact: "संपर्क", Feedback: "प्रतिक्रिया" },
+    heroEyebrow: "भारत का कॉलेज डिस्कवरी कॉकपिट",
+    heroTitle: "आत्मविश्वास के साथ अपना भविष्य चुनें",
+    heroText: "कॉलेज तुलना करें, रैंक परिदृश्य देखें, सही विकल्प शॉर्टलिस्ट करें, और काउंसलिंग सवाल पूछें.",
+    aboutTitle: "CollegeCompass के बारे में",
+    aboutText: "JEE, BITSAT, MET, VITEEE और GATE छात्रों के लिए फिल्टर, रैंक संकेत, फीस और प्लेसमेंट जानकारी एक जगह.",
+    finder: "कॉलेज खोज",
+    predictor: "रैंक अनुमान",
+    predictCta: "मेरा कॉलेज बताएं",
+    languageApplied: "भाषा लागू हुई",
+    contactTitle: "CollegeCompass संपर्क",
+    contactText: "काउंसलिंग, डेटा सुधार या साझेदारी के लिए नीचे दिए गए सपोर्ट डेस्क से संपर्क करें.",
+    feedbackTitle: "काउंसलिंग सवाल-जवाब",
+    ask: "पूछें",
+  },
+  ta: {
+    nav: { Home: "முகப்பு", "College Finder": "கல்லூரி தேடல்", "Rank Predictor": "தரவரிசை கணிப்பு", About: "அறிமுகம்", Contact: "தொடர்பு", Feedback: "கருத்து" },
+    heroEyebrow: "இந்தியாவின் கல்லூரி தேர்வு மையம்",
+    heroTitle: "நம்பிக்கையுடன் உங்கள் எதிர்காலத்தை தேர்வு செய்யுங்கள்",
+    heroText: "கல்லூரிகளை ஒப்பிடுங்கள், தரவரிசை வாய்ப்புகளைப் பாருங்கள், பட்டியலை உருவாக்குங்கள், ஆலோசனை கேள்விகள் கேளுங்கள்.",
+    aboutTitle: "CollegeCompass பற்றி",
+    aboutText: "JEE, BITSAT, MET, VITEEE, GATE மாணவர்களுக்கு வடிகட்டிகள், தரவரிசை, கட்டணம், வேலைவாய்ப்பு தகவல்கள்.",
+    finder: "கல்லூரி தேடல்",
+    predictor: "தரவரிசை கணிப்பு",
+    predictCta: "என் கல்லூரி கணிக்க",
+    languageApplied: "மொழி செயல்படுத்தப்பட்டது",
+    contactTitle: "CollegeCompass தொடர்பு",
+    contactText: "ஆலோசனை, தரவு திருத்தம் அல்லது கூட்டாண்மை உதவிக்கு கீழே தொடர்பு கொள்ளுங்கள்.",
+    feedbackTitle: "ஆலோசனை Q&A",
+    ask: "கேள்",
+  },
+  te: {
+    nav: { Home: "హోమ్", "College Finder": "కాలేజీ శోధన", "Rank Predictor": "ర్యాంక్ అంచనా", About: "గురించి", Contact: "సంప్రదించండి", Feedback: "అభిప్రాయం" },
+    heroEyebrow: "భారత కాలేజీ డిస్కవరీ కాక్‌పిట్",
+    heroTitle: "నమ్మకంతో మీ భవిష్యత్తును ఎంచుకోండి",
+    heroText: "కాలేజీలను పోల్చండి, ర్యాంక్ అవకాశాలు చూడండి, షార్ట్‌లిస్ట్ చేయండి, కౌన్సెలింగ్ ప్రశ్నలు అడగండి.",
+    aboutTitle: "CollegeCompass గురించి",
+    aboutText: "JEE, BITSAT, MET, VITEEE, GATE విద్యార్థులకు ఫిల్టర్లు, ర్యాంక్ సూచనలు, ఫీజు మరియు ప్లేస్‌మెంట్ సమాచారం.",
+    finder: "కాలేజీ శోధన",
+    predictor: "ర్యాంక్ అంచనా",
+    predictCta: "నా కాలేజీ అంచనా",
+    languageApplied: "భాష అమలైంది",
+    contactTitle: "CollegeCompass సంప్రదించండి",
+    contactText: "కౌన్సెలింగ్, డేటా సవరణలు లేదా భాగస్వామ్యాల కోసం క్రింద సంప్రదించండి.",
+    feedbackTitle: "కౌన్సెలింగ్ Q&A",
+    ask: "అడగండి",
+  },
+  bn: {
+    nav: { Home: "হোম", "College Finder": "কলেজ খোঁজ", "Rank Predictor": "র্যাঙ্ক অনুমান", About: "পরিচিতি", Contact: "যোগাযোগ", Feedback: "মতামত" },
+    heroEyebrow: "ভারতের কলেজ ডিসকভারি ককপিট",
+    heroTitle: "আত্মবিশ্বাসের সঙ্গে ভবিষ্যৎ বেছে নিন",
+    heroText: "কলেজ তুলনা করুন, র্যাঙ্ক সম্ভাবনা দেখুন, শর্টলিস্ট বানান, কাউন্সেলিং প্রশ্ন করুন.",
+    aboutTitle: "CollegeCompass সম্পর্কে",
+    aboutText: "JEE, BITSAT, MET, VITEEE, GATE শিক্ষার্থীদের জন্য ফিল্টার, র্যাঙ্ক, ফি ও প্লেসমেন্ট তথ্য.",
+    finder: "কলেজ খোঁজ",
+    predictor: "র্যাঙ্ক অনুমান",
+    predictCta: "আমার কলেজ অনুমান",
+    languageApplied: "ভাষা প্রয়োগ হয়েছে",
+    contactTitle: "CollegeCompass যোগাযোগ",
+    contactText: "কাউন্সেলিং, ডেটা সংশোধন বা পার্টনারশিপের জন্য নিচের সাপোর্ট ডেস্কে যোগাযোগ করুন.",
+    feedbackTitle: "কাউন্সেলিং Q&A",
+    ask: "জিজ্ঞাসা",
+  },
+  mr: {
+    nav: { Home: "होम", "College Finder": "कॉलेज शोध", "Rank Predictor": "रँक अंदाज", About: "माहिती", Contact: "संपर्क", Feedback: "अभिप्राय" },
+    heroEyebrow: "भारताचा कॉलेज डिस्कव्हरी कॉकपिट",
+    heroTitle: "आत्मविश्वासाने भवितव्य निवडा",
+    heroText: "कॉलेज तुलना करा, रँक शक्यता तपासा, शॉर्टलिस्ट करा आणि काउन्सेलिंग प्रश्न विचारा.",
+    aboutTitle: "CollegeCompass बद्दल",
+    aboutText: "JEE, BITSAT, MET, VITEEE आणि GATE विद्यार्थ्यांसाठी फिल्टर्स, रँक, फी व प्लेसमेंट माहिती.",
+    finder: "कॉलेज शोध",
+    predictor: "रँक अंदाज",
+    predictCta: "माझे कॉलेज सांगा",
+    languageApplied: "भाषा लागू झाली",
+    contactTitle: "CollegeCompass संपर्क",
+    contactText: "काउन्सेलिंग, डेटा दुरुस्ती किंवा भागीदारीसाठी खालील सपोर्ट डेस्कशी संपर्क करा.",
+    feedbackTitle: "काउन्सेलिंग Q&A",
+    ask: "विचारा",
+  },
+  gu: {
+    nav: { Home: "હોમ", "College Finder": "કોલેજ શોધ", "Rank Predictor": "રેન્ક અનુમાન", About: "વિશે", Contact: "સંપર્ક", Feedback: "પ્રતિસાદ" },
+    heroEyebrow: "ભારતનું કોલેજ ડિસ્કવરી કોકપિટ",
+    heroTitle: "વિશ્વાસ સાથે તમારું ભવિષ્ય પસંદ કરો",
+    heroText: "કોલેજો સરખાવો, રેન્ક સંભાવનાઓ જુઓ, શોર્ટલિસ્ટ બનાવો અને કાઉન્સેલિંગ પ્રશ્નો પૂછો.",
+    aboutTitle: "CollegeCompass વિશે",
+    aboutText: "JEE, BITSAT, MET, VITEEE અને GATE વિદ્યાર્થીઓ માટે ફિલ્ટર, રેન્ક, ફી અને પ્લેસમેન્ટ માહિતી.",
+    finder: "કોલેજ શોધ",
+    predictor: "રેન્ક અનુમાન",
+    predictCta: "મારું કોલેજ અનુમાન",
+    languageApplied: "ભાષા લાગુ થઈ",
+    contactTitle: "CollegeCompass સંપર્ક",
+    contactText: "કાઉન્સેલિંગ, ડેટા સુધારા અથવા ભાગીદારી માટે નીચે સંપર્ક કરો.",
+    feedbackTitle: "કાઉન્સેલિંગ Q&A",
+    ask: "પૂછો",
+  },
+  kn: {
+    nav: { Home: "ಮುಖಪುಟ", "College Finder": "ಕಾಲೇಜು ಹುಡುಕು", "Rank Predictor": "ರ್ಯಾಂಕ್ ಅಂದಾಜು", About: "ಬಗ್ಗೆ", Contact: "ಸಂಪರ್ಕ", Feedback: "ಪ್ರತಿಕ್ರಿಯೆ" },
+    heroEyebrow: "ಭಾರತದ ಕಾಲೇಜು ಡಿಸ್ಕವರಿ ಕಾಕ್‌ಪಿಟ್",
+    heroTitle: "ನಂಬಿಕೆಯಿಂದ ನಿಮ್ಮ ಭವಿಷ್ಯ ಆರಿಸಿ",
+    heroText: "ಕಾಲೇಜುಗಳನ್ನು ಹೋಲಿಸಿ, ರ್ಯಾಂಕ್ ಅವಕಾಶಗಳನ್ನು ನೋಡಿ, ಶಾರ್ಟ್‌ಲಿಸ್ಟ್ ಮಾಡಿ, ಕೌನ್ಸೆಲಿಂಗ್ ಪ್ರಶ್ನೆಗಳನ್ನು ಕೇಳಿ.",
+    aboutTitle: "CollegeCompass ಬಗ್ಗೆ",
+    aboutText: "JEE, BITSAT, MET, VITEEE, GATE ವಿದ್ಯಾರ್ಥಿಗಳಿಗೆ ಫಿಲ್ಟರ್, ರ್ಯಾಂಕ್, ಶುಲ್ಕ ಮತ್ತು ಪ್ಲೇಸ್‌ಮೆಂಟ್ ಮಾಹಿತಿ.",
+    finder: "ಕಾಲೇಜು ಹುಡುಕು",
+    predictor: "ರ್ಯಾಂಕ್ ಅಂದಾಜು",
+    predictCta: "ನನ್ನ ಕಾಲೇಜು ಅಂದಾಜು",
+    languageApplied: "ಭಾಷೆ ಅನ್ವಯಿಸಲಾಗಿದೆ",
+    contactTitle: "CollegeCompass ಸಂಪರ್ಕ",
+    contactText: "ಕೌನ್ಸೆಲಿಂಗ್, ಡೇಟಾ ತಿದ್ದುಪಡಿ ಅಥವಾ ಪಾಲುದಾರಿಕೆಗಾಗಿ ಕೆಳಗೆ ಸಂಪರ್ಕಿಸಿ.",
+    feedbackTitle: "ಕೌನ್ಸೆಲಿಂಗ್ Q&A",
+    ask: "ಕೇಳಿ",
+  },
+};
 
 const money = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 });
 
@@ -121,9 +277,10 @@ export function PlatformApp() {
   const [saved, setSaved] = useState<College[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0]);
-  const [activeNavItem, setActiveNavItem] = useState<(typeof navItems)[number]>("Home");
+  const [selectedLanguage, setSelectedLanguage] = useState<(typeof languages)[number]>(languages[0]);
+  const [activeNavItem, setActiveNavItem] = useState<NavItem>("Home");
   const navClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const text = copy[selectedLanguage.code];
 
   const params = useMemo(() => {
     const search = new URLSearchParams({ page: String(page), maxFee });
@@ -221,7 +378,7 @@ export function PlatformApp() {
   }
 
   function jumpTo(section: string) {
-    const navItem = section as (typeof navItems)[number];
+    const navItem = section as NavItem;
     setActiveNavItem(navItem);
     setLanguageOpen(false);
     if (navClickTimer.current) clearTimeout(navClickTimer.current);
@@ -269,7 +426,7 @@ export function PlatformApp() {
                 onClick={() => jumpTo(item)}
                 aria-current={item === activeNavItem ? "page" : undefined}
               >
-                {item}
+                {text.nav[item]}
               </button>
             ))}
           </nav>
@@ -281,7 +438,7 @@ export function PlatformApp() {
               </button>
               {languageOpen && (
                 <LanguageMenu
-                  selectedLanguage={selectedLanguage.label}
+                  selectedLanguage={selectedLanguage.code}
                   onSelect={(language) => {
                     setSelectedLanguage(language);
                     setLanguageOpen(false);
@@ -290,7 +447,7 @@ export function PlatformApp() {
               )}
             </div>
             <button className="primary-button h-11 bg-[#2563eb] px-5 hover:bg-[#1d4ed8]" onClick={predictAndJump}>
-              Predict My College
+              {text.predictCta}
             </button>
           </div>
 
@@ -307,7 +464,7 @@ export function PlatformApp() {
         {languageOpen && (
           <div className="absolute right-16 top-[64px] z-50 lg:hidden">
             <LanguageMenu
-              selectedLanguage={selectedLanguage.label}
+              selectedLanguage={selectedLanguage.code}
               onSelect={(language) => {
                 setSelectedLanguage(language);
                 setLanguageOpen(false);
@@ -326,20 +483,35 @@ export function PlatformApp() {
                   onClick={() => jumpTo(item)}
                   aria-current={item === activeNavItem ? "page" : undefined}
                 >
-                  {item}
+                  {text.nav[item]}
                 </button>
               ))}
               <button className="mt-2 rounded-xl bg-[#2563eb] px-5 py-4 text-lg font-extrabold text-white shadow-lg shadow-[#2563eb]/20" onClick={predictAndJump}>
-                Predict My College
+                {text.predictCta}
               </button>
             </div>
           </div>
         )}
       </header>
 
+      <HeroAbout
+        text={text}
+        selectedLanguage={selectedLanguage}
+        collegeCount={total}
+        jumpTo={jumpTo}
+        predictAndJump={predictAndJump}
+      />
+
       <section className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[1fr_390px]">
         <div className="space-y-5">
           <section id="college-finder" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
+            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h2 className="text-xl font-bold text-[#101827]">{text.finder}</h2>
+                <p className="mt-1 text-sm text-[#64748b]">Filter by exam, branch, city, fees, placement, and hostel-ready options.</p>
+              </div>
+              <span className="rounded-md bg-[#eef6ff] px-3 py-2 text-xs font-bold text-[#245bd6]">{visibleColleges.length} live matches</span>
+            </div>
             <div className="grid gap-3 lg:grid-cols-[1fr_150px_140px_150px]">
               <label className="relative">
                 <Search className="absolute left-3 top-3 text-[#6b6a60]" size={18} />
@@ -420,14 +592,14 @@ export function PlatformApp() {
 
           <CompareTable colleges={compare} />
           <TransparencyPanel />
-          <Discussion questions={questions} draft={questionDraft} setDraft={setQuestionDraft} askQuestion={askQuestion} />
+          <Discussion questions={questions} draft={questionDraft} setDraft={setQuestionDraft} askQuestion={askQuestion} text={text} />
         </div>
 
         <aside className="space-y-5">
           <section id="rank-predictor" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
             <div className="flex items-center gap-2">
               <Sparkles className="text-[#b16d2a]" size={20} />
-              <h2 className="text-lg font-semibold">Prediction cockpit</h2>
+              <h2 className="text-lg font-semibold">{text.predictor}</h2>
             </div>
             <div className="mt-4 grid gap-3">
               <div className="grid grid-cols-2 gap-2">
@@ -491,7 +663,100 @@ export function PlatformApp() {
           </section>
         </aside>
       </section>
+      <ContactFooter text={text} jumpTo={jumpTo} />
     </main>
+  );
+}
+
+function HeroAbout({
+  text,
+  selectedLanguage,
+  collegeCount,
+  jumpTo,
+  predictAndJump,
+}: {
+  text: (typeof copy)[LanguageCode];
+  selectedLanguage: (typeof languages)[number];
+  collegeCount: number;
+  jumpTo: (section: NavItem) => void;
+  predictAndJump: () => void;
+}) {
+  const stats = [
+    { label: "College profiles", value: `${collegeCount || 6}+`, icon: <Database size={20} /> },
+    { label: "Prediction modes", value: "2", icon: <Sparkles size={20} /> },
+    { label: "Exam pathways", value: "6", icon: <ClipboardList size={20} /> },
+  ];
+  const steps = [
+    { title: "Choose your exam", body: "Pick JEE Main, Advanced, BITSAT, MET, VITEEE, or GATE.", icon: <CheckCircle2 size={20} /> },
+    { title: "Tune your profile", body: "Use branch, fee, placement, quota, and location filters.", icon: <Users size={20} /> },
+    { title: "Compare outcomes", body: "Save colleges, compare ROI, and run safer or ambitious rank cases.", icon: <TrendingUp size={20} /> },
+  ];
+
+  return (
+    <section id="about" className="scroll-mt-24 border-b border-[#dfe7ee] bg-[#f8fafc]">
+      <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-stretch">
+        <div className="overflow-hidden rounded-md border border-[#d9e4ee] bg-white shadow-sm">
+          <div
+            className="min-h-[420px] bg-cover bg-center"
+            style={{ backgroundImage: "linear-gradient(90deg, rgba(8,20,37,0.86), rgba(19,96,137,0.56), rgba(255,255,255,0.08)), url(https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1400&q=80)" }}
+          >
+            <div className="flex min-h-[420px] flex-col justify-end p-6 text-white md:p-8">
+              <span className="w-fit rounded-md bg-white/16 px-3 py-2 text-xs font-bold uppercase text-white backdrop-blur">{text.heroEyebrow}</span>
+              <h1 className="mt-4 max-w-3xl text-4xl font-extrabold tracking-normal md:text-5xl">{text.heroTitle}</h1>
+              <p className="mt-4 max-w-2xl text-base leading-7 text-[#edf7ff] md:text-lg">{text.heroText}</p>
+              <div className="mt-6 flex flex-wrap gap-3">
+                <button className="primary-button min-h-12 bg-[#2563eb] px-5 hover:bg-[#1d4ed8]" onClick={predictAndJump}>
+                  <Sparkles size={18} /> {text.predictCta}
+                </button>
+                <button className="secondary-button min-h-12 border-white/40 bg-white/95 px-5 text-[#101827]" onClick={() => jumpTo("College Finder")}>
+                  <Search size={18} /> {text.finder} <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <section className="rounded-md border border-[#d9e4ee] bg-white p-5 shadow-sm">
+            <div className="flex items-start gap-3">
+              <span className="grid size-11 place-items-center rounded-md bg-[#e8f1ff] text-[#245bd6]"><GraduationCap size={22} /></span>
+              <div>
+                <h2 className="text-2xl font-bold text-[#101827]">{text.aboutTitle}</h2>
+                <p className="mt-2 text-sm leading-6 text-[#4b5563]">{text.aboutText}</p>
+              </div>
+            </div>
+            <div className="mt-4 rounded-md bg-[#f1f7ff] p-3 text-sm font-semibold text-[#245bd6]">
+              {text.languageApplied}: {selectedLanguage.native} ({selectedLanguage.label})
+            </div>
+          </section>
+
+          <section className="grid gap-3 sm:grid-cols-3">
+            {stats.map((stat) => (
+              <div key={stat.label} className="rounded-md border border-[#d9e4ee] bg-white p-4 shadow-sm">
+                <div className="text-[#245bd6]">{stat.icon}</div>
+                <p className="mt-3 text-2xl font-extrabold text-[#101827]">{stat.value}</p>
+                <p className="mt-1 text-xs font-bold uppercase text-[#64748b]">{stat.label}</p>
+              </div>
+            ))}
+          </section>
+
+          <section className="rounded-md border border-[#d9e4ee] bg-white p-5 shadow-sm">
+            <h2 className="text-lg font-bold text-[#101827]">3 simple steps to find your college</h2>
+            <div className="mt-4 grid gap-3">
+              {steps.map((step, index) => (
+                <div key={step.title} className="grid grid-cols-[34px_1fr] gap-3 rounded-md border border-[#edf1f6] p-3">
+                  <span className="grid size-8 place-items-center rounded-md bg-[#eef6ff] text-[#245bd6]">{step.icon}</span>
+                  <div>
+                    <p className="text-sm font-bold text-[#101827]">0{index + 1} · {step.title}</p>
+                    <p className="mt-1 text-sm leading-5 text-[#64748b]">{step.body}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -504,18 +769,20 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LanguageMenu({ selectedLanguage, onSelect }: { selectedLanguage: string; onSelect: (language: (typeof languages)[number]) => void }) {
+function LanguageMenu({ selectedLanguage, onSelect }: { selectedLanguage: LanguageCode; onSelect: (language: (typeof languages)[number]) => void }) {
   return (
     <div className="w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#e5eaf3] bg-white p-3 shadow-2xl shadow-slate-900/18">
       {languages.map((language) => {
-        const selected = selectedLanguage === language.label;
+        const selected = selectedLanguage === language.code;
         return (
           <button
             key={language.label}
+            data-language-code={language.code}
+            aria-label={`Select ${language.label}`}
             className={`grid w-full grid-cols-[42px_1fr_90px] items-center gap-3 rounded-xl px-4 py-3 text-left transition ${selected ? "bg-[#eef6ff] text-[#245bd6]" : "text-[#313946] hover:bg-[#f5f7fb]"}`}
             onClick={() => onSelect(language)}
           >
-            <span className="text-2xl">🇮🇳</span>
+            <span className="text-sm font-extrabold uppercase text-[#245bd6]">{language.code}</span>
             <span className="text-lg font-bold">{language.native}</span>
             <span className={`text-right text-base ${selected ? "font-bold text-[#245bd6]" : "text-[#8a93a3]"}`}>{language.label}</span>
           </button>
@@ -584,7 +851,7 @@ function CompareTable({ colleges }: { colleges: College[] }) {
 
 function TransparencyPanel() {
   return (
-    <section id="about" className="scroll-mt-24 grid gap-3 rounded-md border border-[#d7d5c9] bg-white p-4 md:grid-cols-3">
+    <section id="methodology" className="scroll-mt-24 grid gap-3 rounded-md border border-[#d7d5c9] bg-white p-4 md:grid-cols-3">
       <div className="flex gap-3">
         <Database className="mt-1 text-[#256f5a]" size={20} />
         <div>
@@ -610,19 +877,89 @@ function TransparencyPanel() {
   );
 }
 
-function Discussion({ questions, draft, setDraft, askQuestion }: { questions: Question[]; draft: { title: string; body: string }; setDraft: (value: { title: string; body: string }) => void; askQuestion: () => void }) {
+function ContactFooter({ text, jumpTo }: { text: (typeof copy)[LanguageCode]; jumpTo: (section: NavItem) => void }) {
+  const contacts = [
+    { label: "Email", value: "support@collegecompass.in", icon: <Mail size={19} /> },
+    { label: "Phone", value: "+91 98765 43210", icon: <Phone size={19} /> },
+    { label: "Counselling desk", value: "Mon-Sat, 9:00 AM - 7:00 PM IST", icon: <LifeBuoy size={19} /> },
+  ];
+
   return (
-    <section id="contact" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
+    <footer id="contact" className="scroll-mt-24 border-t border-[#dfe7ee] bg-[#101827] text-white">
+      <div className="mx-auto grid max-w-7xl gap-6 px-5 py-8 lg:grid-cols-[1fr_1fr]">
+        <div>
+          <div className="flex items-center gap-3">
+            <span className="grid size-11 place-items-center rounded-md bg-[#2563eb] text-white">
+              <GraduationCap size={23} />
+            </span>
+            <span className="text-2xl font-extrabold">CollegeCompass</span>
+          </div>
+          <h2 className="mt-5 text-3xl font-bold tracking-normal">{text.contactTitle}</h2>
+          <p className="mt-3 max-w-xl text-sm leading-6 text-[#cbd5e1]">{text.contactText}</p>
+          <div className="mt-5 flex flex-wrap gap-3">
+            <button className="primary-button bg-[#2563eb] px-5 hover:bg-[#1d4ed8]" onClick={() => jumpTo("College Finder")}>
+              <Search size={18} /> {text.finder}
+            </button>
+            <button className="secondary-button border-white/20 bg-white/10 px-5 text-white hover:border-white hover:text-white" onClick={() => jumpTo("Feedback")}>
+              <MessageSquare size={18} /> {text.nav.Feedback}
+            </button>
+          </div>
+        </div>
+
+        <div className="grid gap-3">
+          {contacts.map((contact) => (
+            <div key={contact.label} className="grid grid-cols-[42px_1fr] gap-3 rounded-md border border-white/10 bg-white/[0.08] p-4">
+              <span className="grid size-10 place-items-center rounded-md bg-white/10 text-[#93c5fd]">{contact.icon}</span>
+              <div>
+                <p className="text-xs font-bold uppercase text-[#94a3b8]">{contact.label}</p>
+                <p className="mt-1 font-semibold text-white">{contact.value}</p>
+              </div>
+            </div>
+          ))}
+          <div className="rounded-md border border-white/10 bg-white/[0.08] p-4">
+            <p className="text-xs font-bold uppercase text-[#94a3b8]">Quick links</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {navItems.map((item) => (
+                <button key={item} className="rounded-md bg-white/10 px-3 py-2 text-sm font-semibold text-[#e2e8f0] hover:bg-white/[0.18]" onClick={() => jumpTo(item)}>
+                  {text.nav[item]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="border-t border-white/10 px-5 py-4 text-center text-xs text-[#94a3b8]">
+        © 2026 CollegeCompass. College data is for counselling guidance and should be verified with official admission portals.
+      </div>
+    </footer>
+  );
+}
+
+function Discussion({
+  questions,
+  draft,
+  setDraft,
+  askQuestion,
+  text,
+}: {
+  questions: Question[];
+  draft: { title: string; body: string };
+  setDraft: (value: { title: string; body: string }) => void;
+  askQuestion: () => void;
+  text: (typeof copy)[LanguageCode];
+}) {
+  return (
+    <section id="feedback" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
       <div className="flex items-center gap-2">
         <MessageSquare className="text-[#9b5147]" size={20} />
-        <h2 className="text-lg font-semibold">Counselling Q&A</h2>
+        <h2 className="text-lg font-semibold">{text.feedbackTitle}</h2>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_120px]">
         <input className="field h-11" placeholder="Question title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
         <input className="field h-11" placeholder="Add context" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
-        <button className="primary-button" onClick={askQuestion}>Ask</button>
+        <button className="primary-button" onClick={askQuestion}>{text.ask}</button>
       </div>
-      <div id="feedback" className="mt-4 grid scroll-mt-24 gap-3">
+      <div className="mt-4 grid gap-3">
         {questions.map((question) => (
           <article key={question.id} className="rounded-md border border-[#e4e1d8] p-3">
             <h3 className="font-semibold">{question.title}</h3>
