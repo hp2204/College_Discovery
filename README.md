@@ -183,7 +183,7 @@ Returns all colleges stored in the database.
 
 * LinkedIn: https://linkedin.com
 * GitHub: https://github.com
-* Working Project: college-discovery-2z5i3cng2-hp-s-projects8.vercel.app
+* Working Project: college-discovery-gold.vercel.app
 
 ---
 
