@@ -62,18 +62,8 @@ const navTargets: Record<NavItem, string> = {
   Contact: "contact",
   Feedback: "feedback",
 };
-const languages = [
-  { code: "en", native: "English", label: "English" },
-  { code: "hi", native: "हिंदी", label: "Hindi" },
-  { code: "ta", native: "தமிழ்", label: "Tamil" },
-  { code: "te", native: "తెలుగు", label: "Telugu" },
-  { code: "bn", native: "বাংলা", label: "Bengali" },
-  { code: "mr", native: "मराठी", label: "Marathi" },
-  { code: "gu", native: "ગુજરાતી", label: "Gujarati" },
-  { code: "kn", native: "ಕನ್ನಡ", label: "Kannada" },
-] as const;
-
-const copy: Record<LanguageCode, {
+type LanguageOption = { code: LanguageCode; native: string; label: string };
+type CleanCopy = {
   nav: Record<NavItem, string>;
   heroEyebrow: string;
   heroTitle: string;
@@ -88,28 +78,56 @@ const copy: Record<LanguageCode, {
   contactText: string;
   feedbackTitle: string;
   ask: string;
-}> = {
-  en: {
-    nav: { Home: "Home", "College Finder": "College Finder", "Rank Predictor": "Rank Predictor", About: "About", Contact: "Contact", Feedback: "Feedback" },
-    heroEyebrow: "India's college discovery cockpit",
-    heroTitle: "Navigate your future with confidence",
-    heroText: "Compare colleges, test rank scenarios, shortlist realistic choices, and ask counselling questions from one focused workspace.",
-    aboutTitle: "About CollegeCompass",
-    aboutText: "Built for JEE, BITSAT, MET, VITEEE, and GATE aspirants who need clear filters, rank insights, fee context, and placement signals before locking their preference list.",
-    finder: "College Finder",
-    predictor: "Rank Predictor",
-    predictCta: "Predict My College",
-    languageApplied: "Language applied",
-    contactTitle: "Contact CollegeCompass",
-    contactText: "Need help with counselling choices, data corrections, or partnerships? Reach the support desk below.",
-    feedbackTitle: "Counselling Q&A",
-    ask: "Ask",
-  },
+  findMatches: string;
+  rankImproves: string;
+  rankWorsens: string;
+  stepsTitle: string;
+  questionTitlePlaceholder: string;
+  questionContextPlaceholder: string;
+};
+
+const languageOptions: LanguageOption[] = [
+  { code: "en", native: "English", label: "English" },
+  { code: "hi", native: "हिन्दी", label: "Hindi" },
+  { code: "ta", native: "தமிழ்", label: "Tamil" },
+  { code: "te", native: "తెలుగు", label: "Telugu" },
+  { code: "bn", native: "বাংলা", label: "Bengali" },
+  { code: "mr", native: "मराठी", label: "Marathi" },
+  { code: "gu", native: "ગુજરાતી", label: "Gujarati" },
+  { code: "kn", native: "ಕನ್ನಡ", label: "Kannada" },
+];
+
+const englishCopy: CleanCopy = {
+  nav: { Home: "Home", "College Finder": "College Finder", "Rank Predictor": "Rank Predictor", About: "About", Contact: "Contact", Feedback: "Feedback" },
+  heroEyebrow: "India's college discovery cockpit",
+  heroTitle: "Navigate your future with confidence",
+  heroText: "Compare colleges, test rank scenarios, shortlist realistic choices, and ask counselling questions from one focused workspace.",
+  aboutTitle: "About CollegeCompass",
+  aboutText: "Built for JEE, BITSAT, MET, VITEEE, and GATE aspirants who need clear filters, rank insights, fee context, and placement signals before locking their preference list.",
+  finder: "College Finder",
+  predictor: "Rank Predictor",
+  predictCta: "Predict My College",
+  languageApplied: "Language applied",
+  contactTitle: "Contact CollegeCompass",
+  contactText: "Need help with counselling choices, data corrections, or partnerships? Reach the support desk below.",
+  feedbackTitle: "Counselling Q&A",
+  ask: "Ask",
+  findMatches: "Find matches",
+  rankImproves: "Rank improves",
+  rankWorsens: "Rank worsens",
+  stepsTitle: "3 simple steps to find your college",
+  questionTitlePlaceholder: "Question title",
+  questionContextPlaceholder: "Add context",
+};
+
+const localizedCopy: Record<LanguageCode, CleanCopy> = {
+  en: englishCopy,
   hi: {
+    ...englishCopy,
     nav: { Home: "होम", "College Finder": "कॉलेज खोज", "Rank Predictor": "रैंक अनुमान", About: "परिचय", Contact: "संपर्क", Feedback: "प्रतिक्रिया" },
     heroEyebrow: "भारत का कॉलेज डिस्कवरी कॉकपिट",
     heroTitle: "आत्मविश्वास के साथ अपना भविष्य चुनें",
-    heroText: "कॉलेज तुलना करें, रैंक परिदृश्य देखें, सही विकल्प शॉर्टलिस्ट करें, और काउंसलिंग सवाल पूछें.",
+    heroText: "कॉलेजों की तुलना करें, रैंक परिदृश्य देखें, सही विकल्प शॉर्टलिस्ट करें, और काउंसलिंग सवाल पूछें.",
     aboutTitle: "CollegeCompass के बारे में",
     aboutText: "JEE, BITSAT, MET, VITEEE और GATE छात्रों के लिए फिल्टर, रैंक संकेत, फीस और प्लेसमेंट जानकारी एक जगह.",
     finder: "कॉलेज खोज",
@@ -120,24 +138,38 @@ const copy: Record<LanguageCode, {
     contactText: "काउंसलिंग, डेटा सुधार या साझेदारी के लिए नीचे दिए गए सपोर्ट डेस्क से संपर्क करें.",
     feedbackTitle: "काउंसलिंग सवाल-जवाब",
     ask: "पूछें",
+    findMatches: "मैच खोजें",
+    rankImproves: "रैंक बेहतर",
+    rankWorsens: "रैंक कमजोर",
+    stepsTitle: "कॉलेज खोजने के 3 आसान चरण",
+    questionTitlePlaceholder: "प्रश्न शीर्षक",
+    questionContextPlaceholder: "संदर्भ जोड़ें",
   },
   ta: {
+    ...englishCopy,
     nav: { Home: "முகப்பு", "College Finder": "கல்லூரி தேடல்", "Rank Predictor": "தரவரிசை கணிப்பு", About: "அறிமுகம்", Contact: "தொடர்பு", Feedback: "கருத்து" },
     heroEyebrow: "இந்தியாவின் கல்லூரி தேர்வு மையம்",
     heroTitle: "நம்பிக்கையுடன் உங்கள் எதிர்காலத்தை தேர்வு செய்யுங்கள்",
-    heroText: "கல்லூரிகளை ஒப்பிடுங்கள், தரவரிசை வாய்ப்புகளைப் பாருங்கள், பட்டியலை உருவாக்குங்கள், ஆலோசனை கேள்விகள் கேளுங்கள்.",
+    heroText: "கல்லூரிகளை ஒப்பிடுங்கள், தரவரிசை வாய்ப்புகளை பாருங்கள், பட்டியலை உருவாக்குங்கள், ஆலோசனை கேள்விகளை கேளுங்கள்.",
     aboutTitle: "CollegeCompass பற்றி",
     aboutText: "JEE, BITSAT, MET, VITEEE, GATE மாணவர்களுக்கு வடிகட்டிகள், தரவரிசை, கட்டணம், வேலைவாய்ப்பு தகவல்கள்.",
     finder: "கல்லூரி தேடல்",
     predictor: "தரவரிசை கணிப்பு",
-    predictCta: "என் கல்லூரி கணிக்க",
+    predictCta: "என் கல்லூரியை கணிக்க",
     languageApplied: "மொழி செயல்படுத்தப்பட்டது",
     contactTitle: "CollegeCompass தொடர்பு",
     contactText: "ஆலோசனை, தரவு திருத்தம் அல்லது கூட்டாண்மை உதவிக்கு கீழே தொடர்பு கொள்ளுங்கள்.",
     feedbackTitle: "ஆலோசனை Q&A",
     ask: "கேள்",
+    findMatches: "பொருத்தங்களை தேடு",
+    rankImproves: "ரேங்க் மேம்படும்",
+    rankWorsens: "ரேங்க் குறையும்",
+    stepsTitle: "கல்லூரியை கண்டறிய 3 எளிய படிகள்",
+    questionTitlePlaceholder: "கேள்வி தலைப்பு",
+    questionContextPlaceholder: "சூழலை சேர்க்கவும்",
   },
   te: {
+    ...englishCopy,
     nav: { Home: "హోమ్", "College Finder": "కాలేజీ శోధన", "Rank Predictor": "ర్యాంక్ అంచనా", About: "గురించి", Contact: "సంప్రదించండి", Feedback: "అభిప్రాయం" },
     heroEyebrow: "భారత కాలేజీ డిస్కవరీ కాక్‌పిట్",
     heroTitle: "నమ్మకంతో మీ భవిష్యత్తును ఎంచుకోండి",
@@ -152,27 +184,41 @@ const copy: Record<LanguageCode, {
     contactText: "కౌన్సెలింగ్, డేటా సవరణలు లేదా భాగస్వామ్యాల కోసం క్రింద సంప్రదించండి.",
     feedbackTitle: "కౌన్సెలింగ్ Q&A",
     ask: "అడగండి",
+    findMatches: "మ్యాచ్‌లు కనుగొనండి",
+    rankImproves: "ర్యాంక్ మెరుగవుతుంది",
+    rankWorsens: "ర్యాంక్ తగ్గుతుంది",
+    stepsTitle: "మీ కాలేజీని కనుగొనడానికి 3 సులభ దశలు",
+    questionTitlePlaceholder: "ప్రశ్న శీర్షిక",
+    questionContextPlaceholder: "సందర్భం జోడించండి",
   },
   bn: {
-    nav: { Home: "হোম", "College Finder": "কলেজ খোঁজ", "Rank Predictor": "র্যাঙ্ক অনুমান", About: "পরিচিতি", Contact: "যোগাযোগ", Feedback: "মতামত" },
+    ...englishCopy,
+    nav: { Home: "হোম", "College Finder": "কলেজ খোঁজ", "Rank Predictor": "র‍্যাঙ্ক অনুমান", About: "পরিচিতি", Contact: "যোগাযোগ", Feedback: "মতামত" },
     heroEyebrow: "ভারতের কলেজ ডিসকভারি ককপিট",
     heroTitle: "আত্মবিশ্বাসের সঙ্গে ভবিষ্যৎ বেছে নিন",
-    heroText: "কলেজ তুলনা করুন, র্যাঙ্ক সম্ভাবনা দেখুন, শর্টলিস্ট বানান, কাউন্সেলিং প্রশ্ন করুন.",
+    heroText: "কলেজ তুলনা করুন, র‍্যাঙ্ক সম্ভাবনা দেখুন, শর্টলিস্ট বানান, কাউন্সেলিং প্রশ্ন করুন.",
     aboutTitle: "CollegeCompass সম্পর্কে",
-    aboutText: "JEE, BITSAT, MET, VITEEE, GATE শিক্ষার্থীদের জন্য ফিল্টার, র্যাঙ্ক, ফি ও প্লেসমেন্ট তথ্য.",
+    aboutText: "JEE, BITSAT, MET, VITEEE, GATE শিক্ষার্থীদের জন্য ফিল্টার, র‍্যাঙ্ক, ফি ও প্লেসমেন্ট তথ্য.",
     finder: "কলেজ খোঁজ",
-    predictor: "র্যাঙ্ক অনুমান",
+    predictor: "র‍্যাঙ্ক অনুমান",
     predictCta: "আমার কলেজ অনুমান",
-    languageApplied: "ভাষা প্রয়োগ হয়েছে",
+    languageApplied: "ভাষা প্রয়োগ হয়েছে",
     contactTitle: "CollegeCompass যোগাযোগ",
     contactText: "কাউন্সেলিং, ডেটা সংশোধন বা পার্টনারশিপের জন্য নিচের সাপোর্ট ডেস্কে যোগাযোগ করুন.",
     feedbackTitle: "কাউন্সেলিং Q&A",
     ask: "জিজ্ঞাসা",
+    findMatches: "ম্যাচ খুঁজুন",
+    rankImproves: "র‍্যাঙ্ক উন্নত",
+    rankWorsens: "র‍্যাঙ্ক কমে",
+    stepsTitle: "কলেজ খুঁজতে 3টি সহজ ধাপ",
+    questionTitlePlaceholder: "প্রশ্নের শিরোনাম",
+    questionContextPlaceholder: "প্রসঙ্গ যোগ করুন",
   },
   mr: {
+    ...englishCopy,
     nav: { Home: "होम", "College Finder": "कॉलेज शोध", "Rank Predictor": "रँक अंदाज", About: "माहिती", Contact: "संपर्क", Feedback: "अभिप्राय" },
     heroEyebrow: "भारताचा कॉलेज डिस्कव्हरी कॉकपिट",
-    heroTitle: "आत्मविश्वासाने भवितव्य निवडा",
+    heroTitle: "आत्मविश्वासाने भविष्य निवडा",
     heroText: "कॉलेज तुलना करा, रँक शक्यता तपासा, शॉर्टलिस्ट करा आणि काउन्सेलिंग प्रश्न विचारा.",
     aboutTitle: "CollegeCompass बद्दल",
     aboutText: "JEE, BITSAT, MET, VITEEE आणि GATE विद्यार्थ्यांसाठी फिल्टर्स, रँक, फी व प्लेसमेंट माहिती.",
@@ -184,8 +230,15 @@ const copy: Record<LanguageCode, {
     contactText: "काउन्सेलिंग, डेटा दुरुस्ती किंवा भागीदारीसाठी खालील सपोर्ट डेस्कशी संपर्क करा.",
     feedbackTitle: "काउन्सेलिंग Q&A",
     ask: "विचारा",
+    findMatches: "जुळणारे शोधा",
+    rankImproves: "रँक सुधारते",
+    rankWorsens: "रँक कमी होते",
+    stepsTitle: "कॉलेज शोधण्यासाठी 3 सोपे टप्पे",
+    questionTitlePlaceholder: "प्रश्न शीर्षक",
+    questionContextPlaceholder: "संदर्भ जोडा",
   },
   gu: {
+    ...englishCopy,
     nav: { Home: "હોમ", "College Finder": "કોલેજ શોધ", "Rank Predictor": "રેન્ક અનુમાન", About: "વિશે", Contact: "સંપર્ક", Feedback: "પ્રતિસાદ" },
     heroEyebrow: "ભારતનું કોલેજ ડિસ્કવરી કોકપિટ",
     heroTitle: "વિશ્વાસ સાથે તમારું ભવિષ્ય પસંદ કરો",
@@ -200,8 +253,15 @@ const copy: Record<LanguageCode, {
     contactText: "કાઉન્સેલિંગ, ડેટા સુધારા અથવા ભાગીદારી માટે નીચે સંપર્ક કરો.",
     feedbackTitle: "કાઉન્સેલિંગ Q&A",
     ask: "પૂછો",
+    findMatches: "મેચ શોધો",
+    rankImproves: "રેન્ક સુધરે",
+    rankWorsens: "રેન્ક ઘટે",
+    stepsTitle: "કોલેજ શોધવા માટે 3 સરળ પગલાં",
+    questionTitlePlaceholder: "પ્રશ્નનું શીર્ષક",
+    questionContextPlaceholder: "સંદર્ભ ઉમેરો",
   },
   kn: {
+    ...englishCopy,
     nav: { Home: "ಮುಖಪುಟ", "College Finder": "ಕಾಲೇಜು ಹುಡುಕು", "Rank Predictor": "ರ್ಯಾಂಕ್ ಅಂದಾಜು", About: "ಬಗ್ಗೆ", Contact: "ಸಂಪರ್ಕ", Feedback: "ಪ್ರತಿಕ್ರಿಯೆ" },
     heroEyebrow: "ಭಾರತದ ಕಾಲೇಜು ಡಿಸ್ಕವರಿ ಕಾಕ್‌ಪಿಟ್",
     heroTitle: "ನಂಬಿಕೆಯಿಂದ ನಿಮ್ಮ ಭವಿಷ್ಯ ಆರಿಸಿ",
@@ -216,6 +276,12 @@ const copy: Record<LanguageCode, {
     contactText: "ಕೌನ್ಸೆಲಿಂಗ್, ಡೇಟಾ ತಿದ್ದುಪಡಿ ಅಥವಾ ಪಾಲುದಾರಿಕೆಗಾಗಿ ಕೆಳಗೆ ಸಂಪರ್ಕಿಸಿ.",
     feedbackTitle: "ಕೌನ್ಸೆಲಿಂಗ್ Q&A",
     ask: "ಕೇಳಿ",
+    findMatches: "ಹೊಂದಾಣಿಕೆ ಹುಡುಕಿ",
+    rankImproves: "ರ್ಯಾಂಕ್ ಸುಧಾರಿಸುತ್ತದೆ",
+    rankWorsens: "ರ್ಯಾಂಕ್ ಕಡಿಮೆಯಾಗುತ್ತದೆ",
+    stepsTitle: "ನಿಮ್ಮ ಕಾಲೇಜು ಕಂಡುಹಿಡಿಯಲು 3 ಸರಳ ಹಂತಗಳು",
+    questionTitlePlaceholder: "ಪ್ರಶ್ನೆ ಶೀರ್ಷಿಕೆ",
+    questionContextPlaceholder: "ಸಂದರ್ಭ ಸೇರಿಸಿ",
   },
 };
 
@@ -277,10 +343,10 @@ export function PlatformApp() {
   const [saved, setSaved] = useState<College[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
-  const [selectedLanguage, setSelectedLanguage] = useState<(typeof languages)[number]>(languages[0]);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageOption>(languageOptions[0]);
   const [activeNavItem, setActiveNavItem] = useState<NavItem>("Home");
   const navClickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const text = copy[selectedLanguage.code];
+  const text = localizedCopy[selectedLanguage.code];
 
   const params = useMemo(() => {
     const search = new URLSearchParams({ page: String(page), maxFee });
@@ -438,6 +504,7 @@ export function PlatformApp() {
               </button>
               {languageOpen && (
                 <LanguageMenu
+                  className="absolute right-0 top-12 z-50"
                   selectedLanguage={selectedLanguage.code}
                   onSelect={(language) => {
                     setSelectedLanguage(language);
@@ -464,6 +531,7 @@ export function PlatformApp() {
         {languageOpen && (
           <div className="absolute right-16 top-[64px] z-50 lg:hidden">
             <LanguageMenu
+              className="relative"
               selectedLanguage={selectedLanguage.code}
               onSelect={(language) => {
                 setSelectedLanguage(language);
@@ -614,11 +682,11 @@ export function PlatformApp() {
                 <select className="field h-11" value={predictBranch} onChange={(e) => setPredictBranch(e.target.value)}>{branches.map((item) => <option key={item}>{item}</option>)}</select>
                 <select className="field h-11" value={mode} onChange={(e) => setMode(e.target.value as (typeof modes)[number])}>{modes.map((item) => <option key={item}>{item}</option>)}</select>
               </div>
-              <button className="primary-button h-11" onClick={() => predict()}>Find matches</button>
+              <button className="primary-button h-11" onClick={() => predict()}>{text.findMatches}</button>
             </div>
             <div className="mt-3 grid grid-cols-2 gap-2">
-              <button className="secondary-button" onClick={() => { const next = String(Math.max(Number(rank) - 5000, 1)); setRank(next); predict(next); }}>Rank improves</button>
-              <button className="secondary-button" onClick={() => { const next = String(Number(rank) + 5000); setRank(next); predict(next); }}>Rank worsens</button>
+              <button className="secondary-button" onClick={() => { const next = String(Math.max(Number(rank) - 5000, 1)); setRank(next); predict(next); }}>{text.rankImproves}</button>
+              <button className="secondary-button" onClick={() => { const next = String(Number(rank) + 5000); setRank(next); predict(next); }}>{text.rankWorsens}</button>
             </div>
           </section>
 
@@ -675,8 +743,8 @@ function HeroAbout({
   jumpTo,
   predictAndJump,
 }: {
-  text: (typeof copy)[LanguageCode];
-  selectedLanguage: (typeof languages)[number];
+  text: CleanCopy;
+  selectedLanguage: LanguageOption;
   collegeCount: number;
   jumpTo: (section: NavItem) => void;
   predictAndJump: () => void;
@@ -741,13 +809,13 @@ function HeroAbout({
           </section>
 
           <section className="rounded-md border border-[#d9e4ee] bg-white p-5 shadow-sm">
-            <h2 className="text-lg font-bold text-[#101827]">3 simple steps to find your college</h2>
+            <h2 className="text-lg font-bold text-[#101827]">{text.stepsTitle}</h2>
             <div className="mt-4 grid gap-3">
               {steps.map((step, index) => (
                 <div key={step.title} className="grid grid-cols-[34px_1fr] gap-3 rounded-md border border-[#edf1f6] p-3">
                   <span className="grid size-8 place-items-center rounded-md bg-[#eef6ff] text-[#245bd6]">{step.icon}</span>
                   <div>
-                    <p className="text-sm font-bold text-[#101827]">0{index + 1} · {step.title}</p>
+                    <p className="text-sm font-bold text-[#101827]">0{index + 1} - {step.title}</p>
                     <p className="mt-1 text-sm leading-5 text-[#64748b]">{step.body}</p>
                   </div>
                 </div>
@@ -769,10 +837,18 @@ function Metric({ label, value }: { label: string; value: string }) {
   );
 }
 
-function LanguageMenu({ selectedLanguage, onSelect }: { selectedLanguage: LanguageCode; onSelect: (language: (typeof languages)[number]) => void }) {
+function LanguageMenu({
+  className = "",
+  selectedLanguage,
+  onSelect,
+}: {
+  className?: string;
+  selectedLanguage: LanguageCode;
+  onSelect: (language: LanguageOption) => void;
+}) {
   return (
-    <div className="w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#e5eaf3] bg-white p-3 shadow-2xl shadow-slate-900/18">
-      {languages.map((language) => {
+    <div className={`${className} w-[360px] max-w-[calc(100vw-2rem)] rounded-2xl border border-[#e5eaf3] bg-white p-3 shadow-2xl shadow-slate-900/18`}>
+      {languageOptions.map((language) => {
         const selected = selectedLanguage === language.code;
         return (
           <button
@@ -877,7 +953,7 @@ function TransparencyPanel() {
   );
 }
 
-function ContactFooter({ text, jumpTo }: { text: (typeof copy)[LanguageCode]; jumpTo: (section: NavItem) => void }) {
+function ContactFooter({ text, jumpTo }: { text: CleanCopy; jumpTo: (section: NavItem) => void }) {
   const contacts = [
     { label: "Email", value: "support@collegecompass.in", icon: <Mail size={19} /> },
     { label: "Phone", value: "+91 98765 43210", icon: <Phone size={19} /> },
@@ -946,7 +1022,7 @@ function Discussion({
   draft: { title: string; body: string };
   setDraft: (value: { title: string; body: string }) => void;
   askQuestion: () => void;
-  text: (typeof copy)[LanguageCode];
+  text: CleanCopy;
 }) {
   return (
     <section id="feedback" className="scroll-mt-24 rounded-md border border-[#d7d5c9] bg-white p-4">
@@ -955,8 +1031,8 @@ function Discussion({
         <h2 className="text-lg font-semibold">{text.feedbackTitle}</h2>
       </div>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_1fr_120px]">
-        <input className="field h-11" placeholder="Question title" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
-        <input className="field h-11" placeholder="Add context" value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+        <input className="field h-11" placeholder={text.questionTitlePlaceholder} value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+        <input className="field h-11" placeholder={text.questionContextPlaceholder} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
         <button className="primary-button" onClick={askQuestion}>{text.ask}</button>
       </div>
       <div className="mt-4 grid gap-3">
